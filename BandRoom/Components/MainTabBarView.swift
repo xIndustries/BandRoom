@@ -4,38 +4,52 @@ struct MainTabBarView: View {
     @State private var selectedTab: Tab = .home
     
     enum Tab {
-        case home, menu, favorites, apps
+        case home, lesson, trophy, profile
     }
     
     var body: some View {
-        VStack {
-            Spacer()
-            
-            HStack {
-                TabBarButton(image: "house", isSelected: selectedTab == .home) {
-                    selectedTab = .home
-                }
-                Spacer()
-                TabBarButton(image: "line.horizontal.3", isSelected: selectedTab == .menu) {
-                    selectedTab = .menu
-                }
-                Spacer()
-                TabBarButton(image: "heart", isSelected: selectedTab == .favorites) {
-                    selectedTab = .favorites
-                }
-                Spacer()
-                TabBarButton(image: "person", isSelected: selectedTab == .apps) {
-                    selectedTab = .apps
-                }
+        ZStack {
+            // Display the selected view
+            switch selectedTab {
+            case .home:
+                HomeView()
+            case .lesson:
+                LessonView()
+            case .trophy:
+                TrophyView()
+            case .profile:
+                ProfileView()
             }
-            .padding(.horizontal, 17)
-            .frame(height: 80)
-            .background(Color.black.opacity(0.9))
-            .clipShape(Capsule())
-            .padding(.horizontal, 16)
-            .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
+            
+            VStack {
+                Spacer()
+                
+                HStack {
+                    TabBarButton(image: "house", isSelected: selectedTab == .home) {
+                        selectedTab = .home
+                    }
+                    Spacer()
+                    TabBarButton(image: "book", isSelected: selectedTab == .lesson) {
+                        selectedTab = .lesson
+                    }
+                    Spacer()
+                    TabBarButton(image: "trophy", isSelected: selectedTab == .trophy) {
+                        selectedTab = .trophy
+                    }
+                    Spacer()
+                    TabBarButton(image: "person", isSelected: selectedTab == .profile) {
+                        selectedTab = .profile
+                    }
+                }
+                .padding(.horizontal, 17)
+                .frame(height: 80)
+                .background(Color.black.opacity(0.9))
+                .clipShape(Capsule())
+                .padding(.horizontal, 16)
+                .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
+            }
+            .ignoresSafeArea(.keyboard, edges: .bottom)
         }
-        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
 }
 
@@ -61,6 +75,5 @@ struct TabBarButton: View {
 struct MainTabBarView_Previews: PreviewProvider {
     static var previews: some View {
         MainTabBarView()
-//            .preferredColorScheme(.dark)
     }
 }
