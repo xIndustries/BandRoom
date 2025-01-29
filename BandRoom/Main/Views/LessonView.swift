@@ -1,18 +1,31 @@
-//
-//  LessonView.swift
-//  BandRoom
-//
-//  Created by Axel Jacob on 28/1/25.
-//
-
 import SwiftUI
 
 struct LessonView: View {
+    let lessonNumber: Int // ✅ Ensure lessonNumber is received
+
     var body: some View {
-        Text("LessonView")
+        VStack {
+            Text("Lesson \(lessonNumber)")
+                .font(.title.bold())
+                .padding()
+            
+            Spacer()
+            
+            NavigationLink(destination: QuizView(lessonNumber: lessonNumber)) { // ✅ Pass lessonNumber
+                Text("Start Quiz")
+                    .bold()
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                    .padding()
+            }
+        }
+        .navigationTitle("Lesson \(lessonNumber)")
     }
 }
 
+// ✅ Fix the preview by passing a default lesson number
 #Preview {
-    LessonView()
+    LessonView(lessonNumber: 1) // ✅ Pass a sample lesson number
 }

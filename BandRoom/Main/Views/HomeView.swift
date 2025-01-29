@@ -4,11 +4,11 @@ struct HomeView: View {
     @State private var unlockedLessons = 1 // Number of unlocked lessons
     
     let lessons = [
-        Lesson(id: "Lesson1", title: "Introduction to Notes", icon: "music.note", isLocked: false),
-        Lesson(id: "Lesson2", title: "Introduction to Notes - Part 2", icon: "music.quarternote.3", isLocked: true),
-        Lesson(id: "Lesson3", title: "Introduction to Notes - Part 3", icon: "pianokeys", isLocked: true),
-        Lesson(id: "Lesson4", title: "Introduction to Notes - Part 4", icon: "guitars", isLocked: true),
-        Lesson(id: "Lesson5", title: "Introduction to Notes - Part 5", icon: "music.mic", isLocked: true)
+        LessonUI(id: "Lesson1", title: "Introduction to Notes", icon: "music.note", isLocked: false),
+        LessonUI(id: "Lesson2", title: "Introduction to Notes - Part 2", icon: "music.quarternote.3", isLocked: true),
+        LessonUI(id: "Lesson3", title: "Introduction to Notes - Part 3", icon: "pianokeys", isLocked: true),
+        LessonUI(id: "Lesson4", title: "Introduction to Notes - Part 4", icon: "guitars", isLocked: true),
+        LessonUI(id: "Lesson5", title: "Introduction to Notes - Part 5", icon: "music.mic", isLocked: true)
     ]
     
     var body: some View {
@@ -59,8 +59,8 @@ struct HomeView: View {
     }
 }
 
-// ✅ Lesson Model
-struct Lesson: Identifiable {
+// ✅ Updated UI Model for Lessons
+struct LessonUI: Identifiable {
     let id: String
     let title: String
     let icon: String
@@ -69,7 +69,7 @@ struct Lesson: Identifiable {
 
 // ✅ Lesson Button UI
 struct LessonButton: View {
-    let lesson: Lesson
+    let lesson: LessonUI
     let isUnlocked: Bool
     let onTap: () -> Void
     
