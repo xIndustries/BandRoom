@@ -43,7 +43,7 @@ struct MainTabBarView: View {
                 }
                 .padding(.horizontal, 11)
                 .frame(height: 70)
-                .background(Color.black.opacity(0.9))
+                .background(Color(red: 0.0, green: 0.098, blue: 0.125))
                 .clipShape(Capsule())
                 .padding(.horizontal, 16)
                 .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
@@ -62,7 +62,7 @@ struct TabBarButton: View {
         Button(action: action) {
             Image(systemName: image)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(isSelected ? .white : .gray)
+                .foregroundColor(isSelected ? Color(red: 0.0, green: 214 / 255.0, blue: 255 / 255.0) : Color(red: 0.0, green: 176 / 255.0, blue: 209 / 255.0))
                 .frame(width: 50, height: 50)
 //                .background(isSelected ? Color.white : Color.clear)
 //                .clipShape(Circle())
