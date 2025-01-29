@@ -41,8 +41,8 @@ struct MainTabBarView: View {
                         selectedTab = .profile
                     }
                 }
-                .padding(.horizontal, 17)
-                .frame(height: 80)
+                .padding(.horizontal, 11)
+                .frame(height: 70)
                 .background(Color.black.opacity(0.9))
                 .clipShape(Capsule())
                 .padding(.horizontal, 16)
@@ -61,12 +61,12 @@ struct TabBarButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: image)
-                .font(.system(size: 24, weight: .medium))
-                .foregroundColor(isSelected ? .black : .gray)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(isSelected ? .white : .gray)
                 .frame(width: 50, height: 50)
-                .background(isSelected ? Color.white : Color.clear)
-                .clipShape(Circle())
-                .scaleEffect(isSelected ? 1.2 : 1.0)
+//                .background(isSelected ? Color.white : Color.clear)
+//                .clipShape(Circle())
+                .scaleEffect(isSelected ? 1.4 : 1.0)
                 .animation(.spring(response: 0.3, dampingFraction: 0.5), value: isSelected)
         }
     }
