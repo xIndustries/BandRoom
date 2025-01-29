@@ -10,6 +10,8 @@ struct QuizView: View {
     @State private var showResultModal = false
     @State private var quizCompleted = false // ✅ Show completion screen after last question
     @State private var selectedDetent: PresentationDetent = .fraction(0.3) // ✅ Prevents dragging up
+    
+    @Environment(\.dismiss) var dismiss // ✅ Allows navigation back
 
     var body: some View {
         NavigationStack {
@@ -18,8 +20,8 @@ struct QuizView: View {
                     ProgressView("Loading Questions...")
                         .onAppear { loadQuestions() }
                 } else if quizCompleted {
-                    // ✅ Show Completion Screen instead of the Quiz
-                    QuizCompletedView()
+                    // ✅ Navigate to Quiz Completed View
+                    QuizCompletedView(onExit: { dismiss() })
                 } else {
                     let question = questions[currentQuestionIndex]
                     
@@ -65,11 +67,14 @@ struct QuizView: View {
             .padding()
             .navigationTitle("Quiz - Lesson \(lessonNumber)")
             .sheet(isPresented: $showResultModal) {
-                FeedbackModal(isCorrect: isCorrect ?? false, correctAnswer: questions[currentQuestionIndex].correctAnswer) {
+                FeedbackModal(
+                    isCorrect: isCorrect ?? false,
+                    correctAnswer: questions[currentQuestionIndex].correctAnswer
+                ) {
                     nextQuestion()
                 }
-                .interactiveDismissDisabled() // ✅ Prevent swipe-to-dismiss
-                .presentationDetents([.fraction(0.3)], selection: $selectedDetent) // ✅ Prevents dragging up
+                .interactiveDismissDisabled()
+                .presentationDetents([.fraction(0.3)], selection: $selectedDetent)
             }
         }
     }
@@ -95,11 +100,11 @@ struct QuizView: View {
     
     // ✅ Check if the selected answer is correct
     func checkAnswer(option: String) {
-        guard let question = questions[safe: currentQuestionIndex] else { return }
+        let question = questions[currentQuestionIndex] // ✅ FIXED: No need for `guard let`
         isCorrect = option == question.correctAnswer
         showFeedback = true
         
-        // ✅ Only show modal if NOT last question
+        // ✅ Show modal only if NOT the last question
         if currentQuestionIndex + 1 < questions.count {
             showResultModal = true
         } else {
@@ -114,9 +119,9 @@ struct QuizView: View {
             selectedAnswer = nil
             showFeedback = false
             isCorrect = nil
-            showResultModal = false // ✅ Close modal only when Next is pressed
+            showResultModal = false
         } else {
-            quizCompleted = true // ✅ Set to true when the last question is answered
+            quizCompleted = true
         }
     }
     
@@ -126,113 +131,6 @@ struct QuizView: View {
             return option == questions[currentQuestionIndex].correctAnswer ? .green : .red
         }
         return Color.blue
-    }
-}
-
-// ✅ Helper to prevent out-of-range errors
-extension Array {
-    subscript(safe index: Index) -> Element? {
-        return indices.contains(index) ? self[index] : nil
-    }
-}
-
-// ✅ "Quiz Completed" Screen
-struct QuizCompletedView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("🎉 Quiz Completed!")
-                .font(.largeTitle)
-                .bold()
-            
-            Text("Well done! You've finished this lesson.")
-                .font(.headline)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-            
-            Button(action: {
-                // Navigate back or restart logic
-            }) {
-                Text("Return to Home")
-                    .bold()
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .padding(.horizontal, 16)
-            }
-            
-            Button(action: {
-                // Show quiz review logic
-            }) {
-                Text("Review Answers")
-                    .bold()
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .padding(.horizontal, 16)
-            }
-        }
-        .padding()
-        .navigationTitle("Quiz Completed")
-    }
-}
-
-// ✅ Modal View for Feedback with Custom Background & Rounded Corners
-struct FeedbackModal: View {
-    let isCorrect: Bool
-    let correctAnswer: String
-    let nextAction: () -> Void
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            Text(isCorrect ? "✅ Correct!" : "❌ Incorrect")
-                .font(.title)
-                .bold()
-                .foregroundColor(isCorrect ? .green : .red)
-            
-            if !isCorrect {
-                Text("Correct Answer: \(correctAnswer)")
-                    .font(.headline)
-                    .foregroundColor(.white.opacity(0.9))
-            }
-            
-            Button(action: nextAction) {
-                Text("Next Question")
-                    .bold()
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .padding(.horizontal, 16)
-            }
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity) // ✅ Expand background
-        .background(Color(red: 0.1, green: 0.1, blue: 0.1)) // ✅ Custom Background
-        .cornerRadius(20, corners: [.topLeft, .topRight]) // ✅ Rounded Top Corners
-        .ignoresSafeArea() // ✅ Cover entire modal background
-    }
-}
-
-// ✅ Extension for Custom Rounded Corners
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
-    }
-}
-
-struct RoundedCorner: Shape {
-    var radius: CGFloat
-    var corners: UIRectCorner
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
-        return Path(path.cgPath)
     }
 }
 
