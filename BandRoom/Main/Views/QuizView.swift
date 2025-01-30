@@ -8,77 +8,92 @@ struct QuizView: View {
     @State private var showFeedback = false
     @State private var isCorrect: Bool?
     @State private var showResultModal = false
-    @State private var quizCompleted = false // ✅ Show completion screen after last question
-    @State private var selectedDetent: PresentationDetent = .fraction(0.3) // ✅ Prevents dragging up
-    
-    @Environment(\.dismiss) var dismiss // ✅ Allows navigation back
+    @State private var quizCompleted = false
+    @State private var correctStreak: Int = 0 // ✅ Track correct answer streak
+    @State private var showStreakPopup = false // ✅ Show "5 Streaks! Congrats!" popup
+    @State private var selectedDetent: PresentationDetent = .fraction(0.3)
+
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         NavigationStack {
-            VStack {
-                if questions.isEmpty {
-                    ProgressView("Loading Questions...")
-                        .onAppear { loadQuestions() }
-                } else if quizCompleted {
-                    // ✅ Navigate to Quiz Completed View
-                    QuizCompletedView(onExit: { dismiss() })
-                } else {
-                    let question = questions[currentQuestionIndex]
-                    
-                    Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
-                        .font(.headline)
-                        .padding(.top)
-                    
-                    Text(question.questionText)
-                        .font(.title2.bold())
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    
-                    if let image = question.image {
-                        Image(image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200, height: 200)
+            ZStack {
+                VStack {
+                    if questions.isEmpty {
+                        ProgressView("Loading Questions...")
+                            .onAppear { loadQuestions() }
+                    } else if quizCompleted {
+                        QuizCompletedView(onExit: { dismiss() })
+                    } else {
+                        let question = questions[currentQuestionIndex]
+                        
+                        Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
+                            .font(.headline)
+                            .padding(.top)
+                        
+                        Text(question.questionText)
+                            .font(.title2.bold())
+                            .multilineTextAlignment(.center)
                             .padding()
-                    }
-                    
-                    VStack(spacing: 15) {
-                        ForEach(question.options, id: \.self) { option in
-                            Button(action: {
-                                selectedAnswer = option
-                                checkAnswer(option: option)
-                            }) {
-                                HStack {
-                                    Text(option)
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .padding()
-                                        .frame(maxWidth: .infinity)
-                                        .background(getButtonColor(for: option))
-                                        .cornerRadius(10)
-                                }
-                            }
-                            .disabled(showFeedback)
+                        
+                        if let image = question.image {
+                            Image(image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 200, height: 200)
+                                .padding()
                         }
+                        
+                        VStack(spacing: 15) {
+                            ForEach(question.options, id: \.self) { option in
+                                Button(action: {
+                                    selectedAnswer = option
+                                    checkAnswer(option: option)
+                                }) {
+                                    HStack {
+                                        Text(option)
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                            .padding()
+                                            .frame(maxWidth: .infinity)
+                                            .background(getButtonColor(for: option))
+                                            .cornerRadius(10)
+                                    }
+                                }
+                                .disabled(showFeedback)
+                            }
+                        }
+                        .padding()
                     }
-                    .padding()
                 }
-            }
-            .padding()
-            .navigationTitle("Quiz - Lesson \(lessonNumber)")
-            .sheet(isPresented: $showResultModal) {
-                FeedbackModal(
-                    isCorrect: isCorrect ?? false,
-                    correctAnswer: questions[currentQuestionIndex].correctAnswer
-                ) {
-                    nextQuestion()
+                .padding()
+                .navigationTitle("Quiz - Lesson \(lessonNumber)")
+                .sheet(isPresented: $showResultModal) {
+                    FeedbackModal(
+                        isCorrect: isCorrect ?? false,
+                        correctAnswer: questions[currentQuestionIndex].correctAnswer
+                    ) {
+                        nextQuestion()
+                    }
+                    .interactiveDismissDisabled()
+                    .presentationDetents([.fraction(0.3)], selection: $selectedDetent)
                 }
-                .interactiveDismissDisabled()
-                .presentationDetents([.fraction(0.3)], selection: $selectedDetent)
+                
+                // ✅ Show Streak Popup when user hits 5 correct answers in a row
+                // ✅ Updated transition with `withAnimation`
+                if showStreakPopup {
+                    StreakCongratsView()
+                        .transition(.scale)
+                        .onAppear {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showStreakPopup = true
+                            }
+                        }
+                }
             }
         }
     }
-    
+
     // ✅ Load JSON questions
     func loadQuestions() {
         let fileName = "Lesson_\(lessonNumber)"
@@ -100,11 +115,26 @@ struct QuizView: View {
     
     // ✅ Check if the selected answer is correct
     func checkAnswer(option: String) {
-        let question = questions[currentQuestionIndex] // ✅ FIXED: No need for `guard let`
+        let question = questions[currentQuestionIndex]
         isCorrect = option == question.correctAnswer
         showFeedback = true
         
-        // ✅ Show modal only if NOT the last question
+        if isCorrect == true {
+            correctStreak += 1
+            if correctStreak == 5 {
+                showStreakPopup = true
+                
+                // 🎉 Hide Streak Popup after 4 seconds
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                    showStreakPopup = false
+                    correctStreak = 0 // Reset streak
+                }
+            }
+        } else {
+            correctStreak = 0 // Reset streak if incorrect
+        }
+        
+        // ✅ Show modal only if NOT last question
         if currentQuestionIndex + 1 < questions.count {
             showResultModal = true
         } else {

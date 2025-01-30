@@ -6,6 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXCopyFilesBuildPhase section */
+		175963382D4A762B00FC0FC4 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		1793F1132D487BC7001CACEB /* BandRoom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BandRoom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -17,16 +30,6 @@
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		1793F1102D487BC7001CACEB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		1793F10A2D487BC7001CACEB = {
@@ -53,8 +56,8 @@
 			buildConfigurationList = 1793F1212D487BC8001CACEB /* Build configuration list for PBXNativeTarget "BandRoom" */;
 			buildPhases = (
 				1793F10F2D487BC7001CACEB /* Sources */,
-				1793F1102D487BC7001CACEB /* Frameworks */,
 				1793F1112D487BC7001CACEB /* Resources */,
+				175963382D4A762B00FC0FC4 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -94,6 +97,8 @@
 			);
 			mainGroup = 1793F10A2D487BC7001CACEB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1793F1142D487BC7001CACEB /* Products */;
 			projectDirPath = "";
