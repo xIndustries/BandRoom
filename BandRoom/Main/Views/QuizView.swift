@@ -22,7 +22,7 @@ struct QuizView: View {
                     ProgressView("Loading Questions...")
                         .onAppear { loadQuestions() }
                 } else if quizCompleted {
-                    QuizCompletedView(onExit: { dismiss() }) // ✅ Exit to previous screen
+                    QuizCompletedView(onExit: { dismiss() })
                 } else {
                     let question = questions[currentQuestionIndex]
                     
@@ -39,25 +39,24 @@ struct QuizView: View {
                         Image(image)
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 200, height: 200)
+                            .frame(width: 200, height: 140)
                             .padding()
                     }
                     
-                    VStack(spacing: 15) {
+                    // ✅ 2x2 Grid for multiple-choice options
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                         ForEach(question.options, id: \.self) { option in
                             Button(action: {
                                 selectedAnswer = option
                                 checkAnswer(option: option)
                             }) {
-                                HStack {
-                                    Text(option)
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .padding()
-                                        .frame(maxWidth: .infinity)
-                                        .background(getButtonColor(for: option))
-                                        .cornerRadius(10)
-                                }
+                                Text(option)
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .frame(width: 160, height: 180) // ✅ Square-like buttons
+                                    .background(getButtonColor(for: option))
+                                    .cornerRadius(15) // ✅ Rounded corners
+                                    .shadow(radius: 4)
                             }
                             .disabled(showFeedback)
                         }
@@ -66,7 +65,6 @@ struct QuizView: View {
                 }
             }
             .padding()
-            .navigationTitle("Quiz - Lesson \(lessonNumber)") // ✅ Uses NavigationStack from MainTabBarView
             .sheet(isPresented: $showResultModal) {
                 FeedbackModal(
                     isCorrect: isCorrect ?? false,
@@ -78,6 +76,7 @@ struct QuizView: View {
                 .presentationDetents([.fraction(0.3)], selection: $selectedDetent)
             }
             
+            // ✅ Show Streak Popup when user hits 5 correct answers in a row
             if showStreakPopup {
                 StreakCongratsView()
                     .transition(.scale)
@@ -90,6 +89,7 @@ struct QuizView: View {
         }
     }
 
+    // ✅ Load JSON questions
     func loadQuestions() {
         let fileName = "Lesson_\(lessonNumber)"
         
@@ -108,6 +108,7 @@ struct QuizView: View {
         }
     }
     
+    // ✅ Check if the selected answer is correct
     func checkAnswer(option: String) {
         let question = questions[currentQuestionIndex]
         isCorrect = option == question.correctAnswer
@@ -117,13 +118,15 @@ struct QuizView: View {
             correctStreak += 1
             if correctStreak == 5 {
                 showStreakPopup = true
+                
+                // 🎉 Hide Streak Popup after 4 seconds
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                     showStreakPopup = false
-                    correctStreak = 0
+                    correctStreak = 0 // Reset streak
                 }
             }
         } else {
-            correctStreak = 0
+            correctStreak = 0 // Reset streak if incorrect
         }
         
         if currentQuestionIndex + 1 < questions.count {
@@ -133,6 +136,7 @@ struct QuizView: View {
         }
     }
     
+    // ✅ Move to the next question
     func nextQuestion() {
         if currentQuestionIndex + 1 < questions.count {
             currentQuestionIndex += 1
@@ -144,7 +148,8 @@ struct QuizView: View {
             quizCompleted = true
         }
     }
-
+    
+    // ✅ Change button color based on selection
     func getButtonColor(for option: String) -> Color {
         if showFeedback {
             return option == questions[currentQuestionIndex].correctAnswer ? .green : .red
@@ -153,6 +158,7 @@ struct QuizView: View {
     }
 }
 
+// ✅ Fixed Preview
 struct QuizView_Previews: PreviewProvider {
     static var previews: some View {
         QuizView(lessonNumber: 1)
