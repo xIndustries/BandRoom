@@ -2,15 +2,15 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var unlockedLessons = 1 // Number of unlocked lessons
-    
+
     let lessons = [
-        LessonUI(id: "Lesson1", title: "Introduction to Notes", icon: "music.note", isLocked: false),
-        LessonUI(id: "Lesson2", title: "Introduction to Notes - Part 2", icon: "music.quarternote.3", isLocked: true),
-        LessonUI(id: "Lesson3", title: "Introduction to Notes - Part 3", icon: "pianokeys", isLocked: true),
-        LessonUI(id: "Lesson4", title: "Introduction to Notes - Part 4", icon: "guitars", isLocked: true),
-        LessonUI(id: "Lesson5", title: "Introduction to Notes - Part 5", icon: "music.mic", isLocked: true)
+        LessonUI(id: "Lesson1", title: "SECTION 1, UNIT 1\nIntroduction to notes", icon: "music.note", isLocked: false),
+        LessonUI(id: "Lesson2", title: "Introduction to Notes - Part 2", icon: "music.note", isLocked: true),
+        LessonUI(id: "Lesson3", title: "Introduction to Notes - Part 3", icon: "music.note", isLocked: true),
+        LessonUI(id: "Lesson4", title: "Introduction to Notes - Part 4", icon: "music.note", isLocked: true),
+        LessonUI(id: "Lesson5", title: "Introduction to Notes - Part 5", icon: "music.note", isLocked: true)
     ]
-    
+
     var body: some View {
         NavigationView {
             VStack {
@@ -20,7 +20,7 @@ struct HomeView: View {
                         .resizable()
                         .frame(width: 50, height: 50)
                         .padding(.leading)
-                    
+
                     VStack(alignment: .leading) {
                         Text("Welcome Back!")
                             .font(.headline)
@@ -36,14 +36,13 @@ struct HomeView: View {
                         .clipShape(Capsule())
                 }
                 .padding(.top, 20)
-                
-                // ✅ Moved "Grade 1" INSIDE ScrollView
+
+                // Lesson Grid
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Grade 1")
                             .font(.title2.bold())
                             .foregroundColor(.primary)
-                            .padding(.horizontal, 20)
 
                         ForEach(lessons.indices, id: \.self) { index in
                             LessonButton(lesson: lessons[index], isUnlocked: index < unlockedLessons) {
@@ -56,7 +55,7 @@ struct HomeView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
                 }
-                
+
                 Spacer()
             }
             .navigationTitle("BandRoom")
@@ -77,25 +76,29 @@ struct LessonButton: View {
     let lesson: LessonUI
     let isUnlocked: Bool
     let onTap: () -> Void
-    
+
     var body: some View {
         Button(action: {
             if isUnlocked {
                 onTap()
             }
         }) {
-            HStack {
+            HStack(alignment: .center) {
                 Image(systemName: lesson.icon)
                     .resizable()
                     .frame(width: 40, height: 40)
                     .foregroundColor(isUnlocked ? .blue : .gray)
-                
-                Text(lesson.title)
-                    .font(.headline)
-                    .foregroundColor(isUnlocked ? .black : .gray)
-                
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(lesson.title)
+                        .font(.subheadline)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundColor(isUnlocked ? .black : .gray)
+                }
+
                 Spacer()
-                
+
                 if isUnlocked {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.green)
