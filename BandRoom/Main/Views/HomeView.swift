@@ -37,9 +37,14 @@ struct HomeView: View {
                 }
                 .padding(.top, 20)
                 
-                // Lesson Grid
+                // ✅ Moved "Grade 1" INSIDE ScrollView
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("Grade 1")
+                            .font(.title2.bold())
+                            .foregroundColor(.primary)
+                            .padding(.horizontal, 20)
+
                         ForEach(lessons.indices, id: \.self) { index in
                             LessonButton(lesson: lessons[index], isUnlocked: index < unlockedLessons) {
                                 if index == unlockedLessons {
@@ -49,7 +54,7 @@ struct HomeView: View {
                         }
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 20)
+                    .padding(.top, 10)
                 }
                 
                 Spacer()

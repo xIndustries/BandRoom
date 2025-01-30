@@ -53,9 +53,9 @@ struct QuizView: View {
                                 Text(option)
                                     .font(.headline)
                                     .foregroundColor(.white)
-                                    .frame(width: 160, height: 180) // ✅ Square-like buttons
+                                    .frame(width: 160, height: 190)
                                     .background(getButtonColor(for: option))
-                                    .cornerRadius(15) // ✅ Rounded corners
+                                    .cornerRadius(15)
                                     .shadow(radius: 4)
                             }
                             .disabled(showFeedback)
