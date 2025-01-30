@@ -4,11 +4,11 @@ struct HomeView: View {
     @State private var unlockedLessons = 1 // Number of unlocked lessons
 
     let lessons = [
-        LessonUI(id: "Lesson1", title: "SECTION 1, UNIT 1\nIntroduction to notes", icon: "music.note", isLocked: false),
-        LessonUI(id: "Lesson2", title: "Introduction to Notes - Part 2", icon: "music.note", isLocked: true),
-        LessonUI(id: "Lesson3", title: "Introduction to Notes - Part 3", icon: "music.note", isLocked: true),
-        LessonUI(id: "Lesson4", title: "Introduction to Notes - Part 4", icon: "music.note", isLocked: true),
-        LessonUI(id: "Lesson5", title: "Introduction to Notes - Part 5", icon: "music.note", isLocked: true)
+        LessonUI(id: "Lesson1", title: "SECTION 1, UNIT 1", title2: "Introduction to notes", icon: "music.note", isLocked: false),
+        LessonUI(id: "Lesson2", title: "SECTION 1, UNIT 2", title2: "Introduction to notes", icon: "music.note", isLocked: true),
+        LessonUI(id: "Lesson3", title: "SECTION 1, UNIT 3", title2: "Introduction to notes", icon: "music.note", isLocked: true),
+        LessonUI(id: "Lesson4", title: "SECTION 1, UNIT 4", title2: "Introduction to notes", icon: "music.note", isLocked: true),
+        LessonUI(id: "Lesson5", title: "SECTION 1, UNIT 5", title2: "Introduction to notes", icon: "music.note", isLocked: true)
     ]
 
     var body: some View {
@@ -67,6 +67,7 @@ struct HomeView: View {
 struct LessonUI: Identifiable {
     let id: String
     let title: String
+    let title2: String
     let icon: String
     let isLocked: Bool
 }
@@ -89,9 +90,16 @@ struct LessonButton: View {
                     .frame(width: 40, height: 40)
                     .foregroundColor(isUnlocked ? .blue : .gray)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(lesson.title)
                         .font(.subheadline)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundColor(isUnlocked ? .black : .gray)
+                    
+                    Text(lesson.title2)
+                        .font(.headline)
+                        .fontWeight(.bold)
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .foregroundColor(isUnlocked ? .black : .gray)
