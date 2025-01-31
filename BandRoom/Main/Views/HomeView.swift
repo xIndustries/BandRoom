@@ -2,6 +2,9 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var unlockedLessons = 1 // Number of unlocked lessons
+    @State private var selectedLesson: LessonUI? // ✅ Store selected lesson for the popup
+    @State private var showLessonPopup = false // ✅ Controls pop-up visibility
+    @State private var navigateToQuiz = false // ✅ Trigger navigation to QuizView
 
     let lessons = [
         LessonUI(id: "Lesson1", title: "SECTION 1, UNIT 1", title2: "Introduction to notes", icon: "music.note", isLocked: false),
@@ -12,53 +15,84 @@ struct HomeView: View {
     ]
 
     var body: some View {
-        NavigationView {
-            VStack {
-                // Profile & XP Progress
-                HStack {
-                    Image(systemName: "person.crop.circle.fill")
-                        .resizable()
-                        .frame(width: 50, height: 50)
-                        .padding(.leading)
+        NavigationStack {
+            ZStack {
+                VStack {
+                    // Profile & XP Progress
+                    HStack {
+                        Image(systemName: "person.crop.circle.fill")
+                            .resizable()
+                            .frame(width: 50, height: 50)
+                            .padding(.leading)
 
-                    VStack(alignment: .leading) {
-                        Text("Welcome Back!")
+                        VStack(alignment: .leading) {
+                            Text("Welcome Back!")
+                                .font(.headline)
+                            Text("Streak: 🔥 7 days")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                        Spacer()
+                        Text("XP: 250")
                             .font(.headline)
-                        Text("Streak: 🔥 7 days")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
+                            .padding()
+                            .background(Color.yellow.opacity(0.2))
+                            .clipShape(Capsule())
                     }
-                    Spacer()
-                    Text("XP: 250")
-                        .font(.headline)
-                        .padding()
-                        .background(Color.yellow.opacity(0.2))
-                        .clipShape(Capsule())
-                }
-                .padding(.top, 20)
+                    .padding(.top, 20)
 
-                // Lesson Grid
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        Text("Grade 1")
-                            .font(.title2.bold())
-                            .foregroundColor(.primary)
+                    // Lesson Grid
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            Text("Grade 1")
+                                .font(.title2.bold())
+                                .foregroundColor(.primary)
 
-                        ForEach(lessons.indices, id: \.self) { index in
-                            LessonButton(lesson: lessons[index], isUnlocked: index < unlockedLessons) {
-                                if index == unlockedLessons {
-                                    unlockedLessons += 1
+                            ForEach(lessons.indices, id: \.self) { index in
+                                LessonButton(
+                                    lesson: lessons[index],
+                                    isUnlocked: index < unlockedLessons
+                                ) {
+                                    if index < unlockedLessons {
+                                        selectedLesson = lessons[index] // ✅ Store selected lesson
+                                        showLessonPopup = true // ✅ Show popup
+                                    }
                                 }
                             }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 10)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
+
+                    Spacer()
+                }
+                .navigationDestination(isPresented: $navigateToQuiz) { // ✅ Navigate to QuizView
+                    if selectedLesson != nil {
+                        QuizView(lessonNumber: 1) // ✅ Pass lesson number
+                    }
                 }
 
-                Spacer()
+                // ✅ Show the LessonPopup as an overlay (NOT a modal)
+                // Inside the ZStack where LessonPopup is shown
+                if showLessonPopup {
+                    LessonPopup(
+                        lesson: selectedLesson!,
+                        onStart: {
+                            showLessonPopup = false // ✅ Hide popup when "Start" is tapped
+                            navigateToQuiz = true // ✅ Trigger navigation to QuizView
+                        },
+                        onDismiss: {
+                            showLessonPopup = false // ✅ Hide popup when tapping outside
+                        }
+                    )
+                    .transition(.scale) // ✅ Smooth appearance
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showLessonPopup = true
+                        }
+                    }
+                }
             }
-            .navigationTitle("BandRoom")
         }
     }
 }
@@ -124,6 +158,7 @@ struct LessonButton: View {
     }
 }
 
+// ✅ Preview
 #Preview {
     HomeView()
 }
