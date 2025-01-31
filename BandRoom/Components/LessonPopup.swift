@@ -20,7 +20,7 @@ struct LessonPopup: View {
                     .fontWeight(.semibold)
                     .foregroundColor(.white)
 
-                Text("\(lesson.id) of 10")
+                Text("\(lesson.id) of 5")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.white.opacity(0.6))

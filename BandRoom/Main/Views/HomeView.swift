@@ -23,22 +23,22 @@ struct HomeView: View {
                         Image(systemName: "person.crop.circle.fill")
                             .resizable()
                             .frame(width: 50, height: 50)
-                            .padding(.leading)
 
                         VStack(alignment: .leading) {
                             Text("Welcome Back!")
                                 .font(.headline)
-                            Text("Streak: 🔥 7 days")
+                            Text("Streak: 0 days")
                                 .font(.subheadline)
                                 .foregroundColor(.gray)
                         }
                         Spacer()
-                        Text("XP: 250")
+                        Text("XP: 0")
                             .font(.headline)
                             .padding()
                             .background(Color.yellow.opacity(0.2))
                             .clipShape(Capsule())
                     }
+                    .padding(.horizontal)
                     .padding(.top, 20)
 
                     // Lesson Grid
