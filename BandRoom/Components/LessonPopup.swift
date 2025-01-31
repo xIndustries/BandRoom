@@ -8,7 +8,7 @@ struct LessonPopup: View {
     var body: some View {
         ZStack {
             // ✅ Transparent background to detect taps
-            Color.black.opacity(0.4)
+            Color.black.opacity(0.5)
                 .edgesIgnoringSafeArea(.all)
                 .onTapGesture {
                     onDismiss() // ✅ Dismiss the popup when tapping outside
