@@ -7,11 +7,11 @@ struct HomeView: View {
     @State private var navigateToQuiz = false // ✅ Trigger navigation to QuizView
 
     let lessons = [
-        LessonUI(id: "Lesson1", title: "SECTION 1, UNIT 1", title2: "Introduction to notes", icon: "music.note", isLocked: false),
-        LessonUI(id: "Lesson2", title: "SECTION 1, UNIT 2", title2: "Introduction to notes", icon: "music.note", isLocked: true),
-        LessonUI(id: "Lesson3", title: "SECTION 1, UNIT 3", title2: "Introduction to notes", icon: "music.note", isLocked: true),
-        LessonUI(id: "Lesson4", title: "SECTION 1, UNIT 4", title2: "Introduction to notes", icon: "music.note", isLocked: true),
-        LessonUI(id: "Lesson5", title: "SECTION 1, UNIT 5", title2: "Introduction to notes", icon: "music.note", isLocked: true)
+        LessonUI(id: "Lesson 1", title: "SECTION 1, UNIT 1", title2: "Introduction to notes", icon: "music.note", isLocked: false),
+        LessonUI(id: "Lesson 2", title: "SECTION 1, UNIT 2", title2: "Introduction to notes", icon: "music.note", isLocked: true),
+        LessonUI(id: "Lesson 3", title: "SECTION 1, UNIT 3", title2: "Introduction to notes", icon: "music.note", isLocked: true),
+        LessonUI(id: "Lesson 4", title: "SECTION 1, UNIT 4", title2: "Introduction to notes", icon: "music.note", isLocked: true),
+        LessonUI(id: "Lesson 5", title: "SECTION 1, UNIT 5", title2: "Introduction to notes", icon: "music.note", isLocked: true)
     ]
 
     var body: some View {
@@ -61,7 +61,7 @@ struct HomeView: View {
                             }
                         }
                         .padding(.horizontal, 20)
-                        .padding(.top, 10)
+                        .padding(.top, 20)
                     }
 
                     Spacer()

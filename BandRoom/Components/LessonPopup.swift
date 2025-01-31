@@ -55,6 +55,6 @@ struct LessonPopup: View {
     LessonPopup(
         lesson: LessonUI(id: "Lesson 1", title: "SECTION 1, UNIT 1", title2: "Introduction to Notes", icon: "music.note", isLocked: false),
         onStart: {},
-        onDismiss: {} // ✅ Add dismiss closure in preview
+        onDismiss: {}
     )
 }
