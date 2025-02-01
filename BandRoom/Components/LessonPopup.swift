@@ -2,34 +2,35 @@ import SwiftUI
 
 struct LessonPopup: View {
     let lesson: LessonUI
+    let lessonNumber: Int
     let onStart: () -> Void
-    let onDismiss: () -> Void // ✅ New closure to handle dismissing
+    let onDismiss: () -> Void
 
     var body: some View {
         ZStack {
-            // ✅ Transparent background to detect taps
-            Color.black.opacity(0.5)
-                .edgesIgnoringSafeArea(.all)
+            // ✅ Background to dismiss on tap
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
                 .onTapGesture {
-                    onDismiss() // ✅ Dismiss the popup when tapping outside
+                    onDismiss() // ✅ Hide popup when tapping outside
                 }
 
             VStack(spacing: 12) {
                 Text(lesson.title2)
-                    .font(.headline)
-                    .fontWeight(.semibold)
+                    .font(.title3)
+                    .bold()
                     .foregroundColor(.white)
 
-                Text("\(lesson.id) of 5")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                Text("Lesson \(lessonNumber) of 5")
+                    .font(.headline)
                     .foregroundColor(.white.opacity(0.6))
 
                 Button(action: onStart) {
-                    HStack {
-                        Text("START")
+                    HStack(spacing: 8) {
+                        Text("Start")
                             .font(.headline)
                             .bold()
+                        
                         Text("+20 XP")
                             .font(.headline)
                             .bold()
@@ -38,11 +39,11 @@ struct LessonPopup: View {
                     .background(Color.green)
                     .foregroundColor(.white)
                     .cornerRadius(12)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 16)
                 }
             }
             .padding()
-            .frame(width: 360, height: 170)
+            .frame(width: 380, height: 180)
             .background(Color.blue)
             .cornerRadius(20)
             .shadow(radius: 10)
@@ -53,7 +54,8 @@ struct LessonPopup: View {
 // ✅ Preview
 #Preview {
     LessonPopup(
-        lesson: LessonUI(id: "Lesson 1", title: "SECTION 1, UNIT 1", title2: "Introduction to Notes", icon: "music.note", isLocked: false),
+        lesson: LessonUI(id: "Lesson 1", title: "SECTION 1, UNIT 1", title2: "Introduction to Notes", icon: "music.note"),
+        lessonNumber: 1,
         onStart: {},
         onDismiss: {}
     )

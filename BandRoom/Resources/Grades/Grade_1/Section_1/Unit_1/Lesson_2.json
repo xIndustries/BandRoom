@@ -88,7 +88,7 @@
       "category": "Notes",
       "questionText": "Which note is on the fourth space of the treble clef?",
       "questionType": "multipleChoice",
-      "options": ["D", "F", "A", "C"],
+      "options": ["D", "F", "E", "C"],
       "correctAnswer": "E",
       "image": "treble_clef_fourth_space.png",
       "audio": null,

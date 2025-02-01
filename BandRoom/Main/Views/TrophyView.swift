@@ -1,15 +1,16 @@
-//
-//  TrophyView.swift
-//  BandRoom
-//
-//  Created by Axel Jacob on 28/1/25.
-//
 
 import SwiftUI
 
 struct TrophyView: View {
     var body: some View {
-        Text("Trophy View")
+        VStack {
+            Text("Trophy View")
+            
+            Image("note_c") // ✅ No need to include ".png" extension
+                .resizable()
+                .scaledToFit()
+                .frame(width: 200, height: 200) // ✅ Adjust size if needed
+        }
     }
 }
 

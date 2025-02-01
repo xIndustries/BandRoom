@@ -26,14 +26,17 @@ struct QuizView: View {
                 } else {
                     let question = questions[currentQuestionIndex]
                     
-                    Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
-                        .font(.headline)
-                        .padding(.top)
-                    
-                    Text(question.questionText)
-                        .font(.title2.bold())
-                        .multilineTextAlignment(.center)
-                        .padding()
+                    VStack(spacing: 10) {
+                        Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
+                            .font(.headline)
+                        //                        .padding(.top)
+                        
+                        Text(question.questionText)
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .multilineTextAlignment(.center)
+                        //                        .padding()
+                    }
                     
                     if let image = question.image {
                         Image(image)
@@ -133,6 +136,7 @@ struct QuizView: View {
             showResultModal = true
         } else {
             quizCompleted = true
+            updateLessonProgress() // ✅ Update progress when lesson is finished
         }
     }
     
@@ -146,6 +150,15 @@ struct QuizView: View {
             showResultModal = false
         } else {
             quizCompleted = true
+            updateLessonProgress() // ✅ Update lesson progress in UserDefaults
+        }
+    }
+
+    // ✅ Save progress when a lesson is completed
+    func updateLessonProgress() {
+        let currentLesson = UserDefaults.standard.integer(forKey: "currentLessonIndex")
+        if currentLesson == lessonNumber - 1 { // ✅ Only update if the lesson was just completed
+            UserDefaults.standard.set(currentLesson + 1, forKey: "currentLessonIndex")
         }
     }
     
