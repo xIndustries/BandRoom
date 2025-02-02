@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State private var currentLessonIndex: Int = UserDefaults.standard.integer(forKey: "currentLessonIndex") // ✅ Load lesson progress
+    @AppStorage("currentLessonIndex") private var currentLessonIndex: Int = 0 // ✅ Persist lesson progress
     @State private var selectedLesson: LessonUI?
     @State private var showLessonPopup = false
     @State private var navigateToQuiz = false
@@ -23,10 +23,13 @@ struct HomeView: View {
                 // Lesson Grid
                 lessonScrollView()
             }
+            .onAppear {
+                refreshLessonProgress() // ✅ Ensure lessons refresh when returning to HomeView
+            }
             .navigationDestination(isPresented: $navigateToQuiz) {
                 if let selectedLesson = selectedLesson {
-                    let lessonNumber = Int(selectedLesson.id.split(separator: " ").last!) ?? 1 // ✅ Extract lesson number from ID
-                    QuizView(lessonNumber: lessonNumber) // ✅ Pass the correct lesson number
+                    let lessonNumber = extractLessonNumber(from: selectedLesson.id)
+                    QuizView(lessonNumber: lessonNumber) // ✅ Pass correct lesson number
                 }
             }
 
@@ -50,9 +53,6 @@ struct HomeView: View {
                     }
                 }
             }
-        }
-        .onAppear {
-            validateProgress()
         }
     }
 
@@ -92,9 +92,9 @@ struct HomeView: View {
                 ForEach(lessons.indices, id: \.self) { index in
                     LessonButton(
                         lesson: lessons[index],
-                        isUnlocked: index == currentLessonIndex // ✅ Unlock ONLY the current lesson
+                        isUnlocked: index <= currentLessonIndex // ✅ Unlock based on progress
                     ) {
-                        if index == currentLessonIndex { // ✅ Open only if it's the correct lesson
+                        if index == currentLessonIndex { // ✅ Open only if it's the next lesson
                             selectedLesson = lessons[index]
                             showLessonPopup = true
                         }
@@ -106,18 +106,15 @@ struct HomeView: View {
         }
     }
 
-    // ✅ Validate progress & prevent early unlocks
-    private func validateProgress() {
+    // ✅ Refresh lesson progress when navigating back to HomeView
+    private func refreshLessonProgress() {
         let savedLessonIndex = UserDefaults.standard.integer(forKey: "currentLessonIndex")
+        currentLessonIndex = savedLessonIndex
+    }
 
-        print("🔎 Validating progress... Current lesson index: \(savedLessonIndex)")
-
-        // ❌ If progress is ahead of expected, reset it
-        if savedLessonIndex > lessons.count - 1 {
-            print("🚨 Invalid lesson progress detected! Resetting to last valid lesson.")
-            UserDefaults.standard.set(lessons.count - 1, forKey: "currentLessonIndex")
-            currentLessonIndex = lessons.count - 1
-        }
+    // ✅ Extract lesson number from ID
+    private func extractLessonNumber(from id: String) -> Int {
+        return Int(id.split(separator: " ").last!) ?? 1
     }
 }
 
@@ -153,7 +150,7 @@ struct LessonButton: View {
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .foregroundColor(isUnlocked ? .black : .gray)
-                    
+
                     Text(lesson.title2)
                         .font(.headline)
                         .fontWeight(.bold)
