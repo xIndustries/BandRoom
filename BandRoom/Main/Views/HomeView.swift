@@ -185,6 +185,8 @@ struct LessonButton: View {
 
                 if isCompleted { // ✅ Show checkmark only if completed
                     Image(systemName: "checkmark.circle.fill")
+                        .resizable()
+                        .frame(width: 24, height: 24)
                         .foregroundColor(.green)
                 } else if !isUnlocked {
                     Image(systemName: "lock.fill")
