@@ -2,6 +2,8 @@ import SwiftUI
 
 struct QuizView: View {
     let lessonNumber: Int
+    let onComplete: (Int) -> Void // ✅ Accepts lesson completion callback
+
     @State private var questions: [Question] = []
     @State private var currentQuestionIndex = 0
     @State private var selectedAnswer: String?
@@ -23,7 +25,10 @@ struct QuizView: View {
                     ProgressView("Loading Questions...")
                         .onAppear { loadQuestions() }
                 } else if quizCompleted {
-                    QuizCompletedView(onExit: { dismiss() })
+                    QuizCompletedView(onExit: {
+                        onComplete(lessonNumber) // ✅ Call completion function when user exits
+                        dismiss()
+                    })
                 } else {
                     let question = questions[currentQuestionIndex]
                     
@@ -134,7 +139,7 @@ struct QuizView: View {
             showResultModal = true
         } else {
             print("✅ Quiz completed!") // Debug print
-            quizCompleted = true // ✅ Quiz is complete
+            quizCompleted = true
         }
     }
     
@@ -183,6 +188,6 @@ struct QuizView: View {
 // ✅ Fixed Preview
 struct QuizView_Previews: PreviewProvider {
     static var previews: some View {
-        QuizView(lessonNumber: 1)
+        QuizView(lessonNumber: 1, onComplete: { _ in })
     }
 }

@@ -15,7 +15,7 @@ struct MainTabBarView: View {
                 case .home:
                     HomeView()
                 case .lesson:
-                    LessonView(lessonNumber: 1)
+                    LessonView(lessonNumber: 1, onComplete: markLessonCompleted) // ✅ Pass the completion function
                 case .trophy:
                     TrophyView()
                 case .profile:
@@ -53,6 +53,12 @@ struct MainTabBarView: View {
             }
         }
     }
+
+    // ✅ Lesson completion function
+    private func markLessonCompleted(lessonNumber: Int) {
+        print("✅ Lesson \(lessonNumber) completed!")
+        UserDefaults.standard.set(lessonNumber, forKey: "currentLessonIndex") // ✅ Save progress
+    }
 }
 
 struct TabBarButton: View {
@@ -64,7 +70,7 @@ struct TabBarButton: View {
         Button(action: action) {
             Image(systemName: image)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(isSelected ? Color(Color.white) : Color(Color.gray))
+                .foregroundColor(isSelected ? Color.white : Color.gray)
                 .frame(width: 50, height: 50)
                 .scaleEffect(isSelected ? 1.4 : 1.0)
                 .animation(.spring(response: 0.3, dampingFraction: 0.5), value: isSelected)

@@ -2,6 +2,8 @@ import SwiftUI
 
 struct HomeView: View {
     @AppStorage("currentLessonIndex") private var currentLessonIndex: Int = 0 // ✅ Persist lesson progress
+    @AppStorage("completedLessons") private var completedLessons: String = "" // ✅ Track completed lessons
+
     @State private var selectedLesson: LessonUI?
     @State private var showLessonPopup = false
     @State private var navigateToQuiz = false
@@ -29,7 +31,7 @@ struct HomeView: View {
             .navigationDestination(isPresented: $navigateToQuiz) {
                 if let selectedLesson = selectedLesson {
                     let lessonNumber = extractLessonNumber(from: selectedLesson.id)
-                    QuizView(lessonNumber: lessonNumber) // ✅ Pass correct lesson number
+                    QuizView(lessonNumber: lessonNumber, onComplete: markLessonCompleted) // ✅ Pass completion callback
                 }
             }
 
@@ -37,13 +39,13 @@ struct HomeView: View {
             if showLessonPopup, let lesson = selectedLesson {
                 LessonPopup(
                     lesson: lesson,
-                    lessonNumber: currentLessonIndex + 1, // ✅ Display correct lesson number
+                    lessonNumber: currentLessonIndex + 1,
                     onStart: {
                         showLessonPopup = false
                         navigateToQuiz = true
                     },
                     onDismiss: {
-                        showLessonPopup = false // ✅ Close when tapping outside
+                        showLessonPopup = false
                     }
                 )
                 .transition(.scale)
@@ -90,11 +92,13 @@ struct HomeView: View {
                     .foregroundColor(.primary)
 
                 ForEach(lessons.indices, id: \.self) { index in
+                    let isCompleted = isLessonCompleted(lessonID: lessons[index].id)
                     LessonButton(
                         lesson: lessons[index],
-                        isUnlocked: index <= currentLessonIndex // ✅ Unlock based on progress
+                        isUnlocked: index <= currentLessonIndex,
+                        isCompleted: isCompleted // ✅ Pass completed status
                     ) {
-                        if index == currentLessonIndex { // ✅ Open only if it's the next lesson
+                        if index == currentLessonIndex {
                             selectedLesson = lessons[index]
                             showLessonPopup = true
                         }
@@ -116,6 +120,23 @@ struct HomeView: View {
     private func extractLessonNumber(from id: String) -> Int {
         return Int(id.split(separator: " ").last!) ?? 1
     }
+
+    // ✅ Mark lesson as completed
+    private func markLessonCompleted(lessonNumber: Int) {
+        let lessonID = lessons[lessonNumber - 1].id
+        var completedSet = Set(completedLessons.split(separator: ",").map(String.init))
+        completedSet.insert(lessonID)
+
+        completedLessons = completedSet.joined(separator: ",") // ✅ Save progress
+        if lessonNumber - 1 == currentLessonIndex {
+            currentLessonIndex += 1 // ✅ Unlock the next lesson
+        }
+    }
+
+    // ✅ Check if a lesson is completed
+    private func isLessonCompleted(lessonID: String) -> Bool {
+        return completedLessons.split(separator: ",").map(String.init).contains(lessonID)
+    }
 }
 
 // ✅ Updated UI Model for Lessons
@@ -130,6 +151,7 @@ struct LessonUI: Identifiable {
 struct LessonButton: View {
     let lesson: LessonUI
     let isUnlocked: Bool
+    let isCompleted: Bool // ✅ New property to show checkmark
     let onTap: () -> Void
 
     var body: some View {
@@ -161,10 +183,10 @@ struct LessonButton: View {
 
                 Spacer()
 
-                if isUnlocked {
+                if isCompleted { // ✅ Show checkmark only if completed
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.green)
-                } else {
+                } else if !isUnlocked {
                     Image(systemName: "lock.fill")
                         .foregroundColor(.gray)
                 }
