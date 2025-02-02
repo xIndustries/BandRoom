@@ -9,6 +9,7 @@ struct QuizView: View {
     @State private var isCorrect: Bool?
     @State private var showResultModal = false
     @State private var quizCompleted = false
+    @State private var exitedEarly = false // ✅ Track early exits
     @State private var correctStreak: Int = 0
     @State private var showStreakPopup = false
     @State private var selectedDetent: PresentationDetent = .fraction(0.3)
@@ -29,13 +30,11 @@ struct QuizView: View {
                     VStack(spacing: 10) {
                         Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
                             .font(.headline)
-                        //                        .padding(.top)
                         
                         Text(question.questionText)
                             .font(.title3)
                             .fontWeight(.semibold)
                             .multilineTextAlignment(.center)
-                        //                        .padding()
                     }
                     
                     if let image = question.image {
@@ -46,7 +45,6 @@ struct QuizView: View {
                             .padding()
                     }
                     
-                    // ✅ 2x2 Grid for multiple-choice options
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                         ForEach(question.options, id: \.self) { option in
                             Button(action: {
@@ -68,6 +66,10 @@ struct QuizView: View {
                 }
             }
             .padding()
+            .onDisappear {
+                print("⏳ onDisappear triggered") // Debug print
+                handleExit()
+            }
             .sheet(isPresented: $showResultModal) {
                 FeedbackModal(
                     isCorrect: isCorrect ?? false,
@@ -79,7 +81,6 @@ struct QuizView: View {
                 .presentationDetents([.fraction(0.3)], selection: $selectedDetent)
             }
             
-            // ✅ Show Streak Popup when user hits 5 correct answers in a row
             if showStreakPopup {
                 StreakCongratsView()
                     .transition(.scale)
@@ -92,7 +93,6 @@ struct QuizView: View {
         }
     }
 
-    // ✅ Load JSON questions
     func loadQuestions() {
         let fileName = "Lesson_\(lessonNumber)"
         
@@ -111,7 +111,6 @@ struct QuizView: View {
         }
     }
     
-    // ✅ Check if the selected answer is correct
     func checkAnswer(option: String) {
         let question = questions[currentQuestionIndex]
         isCorrect = option == question.correctAnswer
@@ -122,25 +121,23 @@ struct QuizView: View {
             if correctStreak == 5 {
                 showStreakPopup = true
                 
-                // 🎉 Hide Streak Popup after 4 seconds
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                     showStreakPopup = false
-                    correctStreak = 0 // Reset streak
+                    correctStreak = 0
                 }
             }
         } else {
-            correctStreak = 0 // Reset streak if incorrect
+            correctStreak = 0
         }
         
         if currentQuestionIndex + 1 < questions.count {
             showResultModal = true
         } else {
-            quizCompleted = true
-            updateLessonProgress() // ✅ Update progress when lesson is finished
+            print("✅ Quiz completed!") // Debug print
+            quizCompleted = true // ✅ Quiz is complete
         }
     }
     
-    // ✅ Move to the next question
     func nextQuestion() {
         if currentQuestionIndex + 1 < questions.count {
             currentQuestionIndex += 1
@@ -149,20 +146,32 @@ struct QuizView: View {
             isCorrect = nil
             showResultModal = false
         } else {
+            print("✅ All questions answered! Marking quiz as complete.") // Debug print
             quizCompleted = true
-            updateLessonProgress() // ✅ Update lesson progress in UserDefaults
         }
     }
 
-    // ✅ Save progress when a lesson is completed
+    func handleExit() {
+        if !quizCompleted {
+            print("❌ User exited early! Progress will NOT be updated.") // Debug print
+            exitedEarly = true
+        }
+        updateLessonProgress()
+    }
+
     func updateLessonProgress() {
+        if !quizCompleted || exitedEarly {
+            print("🚫 Progress NOT updated. Reason: \(exitedEarly ? "Exited early" : "Quiz not complete")") // Debug print
+            return
+        }
+
         let currentLesson = UserDefaults.standard.integer(forKey: "currentLessonIndex")
-        if currentLesson == lessonNumber - 1 { // ✅ Only update if the lesson was just completed
+        if currentLesson == lessonNumber - 1 {
+            print("✅ Lesson \(lessonNumber) completed! Unlocking next lesson.") // Debug print
             UserDefaults.standard.set(currentLesson + 1, forKey: "currentLessonIndex")
         }
     }
     
-    // ✅ Change button color based on selection
     func getButtonColor(for option: String) -> Color {
         if showFeedback {
             return option == questions[currentQuestionIndex].correctAnswer ? .green : .red

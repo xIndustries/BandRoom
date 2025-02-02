@@ -15,44 +15,45 @@ struct HomeView: View {
     ]
 
     var body: some View {
-            ZStack {
-                VStack {
-                    // Profile & XP Progress
-                    userProfileSection()
+        ZStack {
+            VStack {
+                // Profile & XP Progress
+                userProfileSection()
 
-                    // Lesson Grid
-                    lessonScrollView()
+                // Lesson Grid
+                lessonScrollView()
+            }
+            .navigationDestination(isPresented: $navigateToQuiz) {
+                if let selectedLesson = selectedLesson {
+                    let lessonNumber = Int(selectedLesson.id.split(separator: " ").last!) ?? 1 // ✅ Extract lesson number from ID
+                    QuizView(lessonNumber: lessonNumber) // ✅ Pass the correct lesson number
                 }
-                .navigationDestination(isPresented: $navigateToQuiz) {
-                    if let selectedLesson = selectedLesson {
-                        let lessonNumber = Int(selectedLesson.id.split(separator: " ").last!) ?? 1 // ✅ Extract lesson number from ID
-                        QuizView(lessonNumber: lessonNumber) // ✅ Pass the correct lesson number
+            }
+
+            // ✅ Show LessonPopup as an overlay (NOT a modal)
+            if showLessonPopup, let lesson = selectedLesson {
+                LessonPopup(
+                    lesson: lesson,
+                    lessonNumber: currentLessonIndex + 1, // ✅ Display correct lesson number
+                    onStart: {
+                        showLessonPopup = false
+                        navigateToQuiz = true
+                    },
+                    onDismiss: {
+                        showLessonPopup = false // ✅ Close when tapping outside
                     }
-                }
-
-
-                // ✅ Show LessonPopup as an overlay (NOT a modal)
-                if showLessonPopup, let lesson = selectedLesson {
-                    LessonPopup(
-                        lesson: lesson,
-                        lessonNumber: currentLessonIndex + 1, // ✅ Display correct lesson number
-                        onStart: {
-                            updateLessonProgress() // ✅ Unlock next lesson
-                            showLessonPopup = false
-                            navigateToQuiz = true
-                        },
-                        onDismiss: {
-                            showLessonPopup = false // ✅ Close when tapping outside
-                        }
-                    )
-                    .transition(.scale)
-                    .onAppear {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            showLessonPopup = true
-                        }
+                )
+                .transition(.scale)
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showLessonPopup = true
                     }
                 }
             }
+        }
+        .onAppear {
+            validateProgress()
+        }
     }
 
     // ✅ Profile & XP Section
@@ -91,9 +92,9 @@ struct HomeView: View {
                 ForEach(lessons.indices, id: \.self) { index in
                     LessonButton(
                         lesson: lessons[index],
-                        isUnlocked: index <= currentLessonIndex
+                        isUnlocked: index == currentLessonIndex // ✅ Unlock ONLY the current lesson
                     ) {
-                        if index == currentLessonIndex { // ✅ Open only if it's the next lesson
+                        if index == currentLessonIndex { // ✅ Open only if it's the correct lesson
                             selectedLesson = lessons[index]
                             showLessonPopup = true
                         }
@@ -105,12 +106,17 @@ struct HomeView: View {
         }
     }
 
-    // ✅ Update lesson progress when a lesson is completed
-    private func updateLessonProgress() {
+    // ✅ Validate progress & prevent early unlocks
+    private func validateProgress() {
         let savedLessonIndex = UserDefaults.standard.integer(forKey: "currentLessonIndex")
-        if savedLessonIndex == currentLessonIndex { // ✅ Only update if user is on the latest lesson
-            UserDefaults.standard.set(savedLessonIndex + 1, forKey: "currentLessonIndex")
-            currentLessonIndex += 1
+
+        print("🔎 Validating progress... Current lesson index: \(savedLessonIndex)")
+
+        // ❌ If progress is ahead of expected, reset it
+        if savedLessonIndex > lessons.count - 1 {
+            print("🚨 Invalid lesson progress detected! Resetting to last valid lesson.")
+            UserDefaults.standard.set(lessons.count - 1, forKey: "currentLessonIndex")
+            currentLessonIndex = lessons.count - 1
         }
     }
 }

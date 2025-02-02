@@ -64,7 +64,7 @@ struct TabBarButton: View {
         Button(action: action) {
             Image(systemName: image)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(isSelected ? Color(red: 0.0, green: 214 / 255.0, blue: 255 / 255.0) : Color(red: 0.0, green: 176 / 255.0, blue: 209 / 255.0))
+                .foregroundColor(isSelected ? Color(Color.white) : Color(Color.gray))
                 .frame(width: 50, height: 50)
                 .scaleEffect(isSelected ? 1.4 : 1.0)
                 .animation(.spring(response: 0.3, dampingFraction: 0.5), value: isSelected)
