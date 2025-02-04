@@ -16,64 +16,110 @@ struct QuizView: View {
     @State private var showStreakPopup = false
     @State private var selectedDetent: PresentationDetent = .fraction(0.3)
 
-    @AppStorage("xp") private var xp: Int = 0 // ✅ XP storage
+    @AppStorage("xp") private var xp: Int = 0 // 🏆 XP Tracking
+    @AppStorage("hearts") private var hearts: Int = 5 // ❤️ Heart system
+    @AppStorage("lastHeartReset") private var lastHeartReset: TimeInterval = Date().timeIntervalSince1970
 
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
         ZStack {
             VStack {
+                // ❤️ Display Hearts & XP Bar
+                HStack {
+                    ForEach(0..<hearts, id: \.self) { _ in
+                        Image(systemName: "heart.fill")
+                            .foregroundColor(.red)
+                    }
+                    ForEach(0..<(5 - hearts), id: \.self) { _ in
+                        Image(systemName: "heart")
+                            .foregroundColor(.gray)
+                    }
+                    
+                    Spacer()
+                    
+                    // 🏆 XP Display
+                    HStack {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.yellow)
+                        Text("\(xp) XP")
+                            .font(.headline)
+                            .foregroundColor(.yellow)
+                    }
+                }
+                .padding()
+
                 if questions.isEmpty {
                     ProgressView("Loading Questions...")
-                        .onAppear { loadQuestions() }
+                        .onAppear {
+                            resetHeartsIfNeeded()
+                            loadQuestions()
+                        }
                 } else if quizCompleted {
                     QuizCompletedView(onExit: {
-                        onComplete(lessonNumber) // ✅ Ensure XP & lesson progress update on exit
+                        onComplete(lessonNumber)
                         dismiss()
                     })
                 } else {
-                    let question = questions[currentQuestionIndex]
-                    
-                    VStack(spacing: 10) {
-                        Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
-                            .font(.headline)
-                        
-                        Text(question.questionText)
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .multilineTextAlignment(.center)
-                    }
-                    
-                    if let image = question.image {
-                        Image(image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200, height: 140)
-                            .padding()
-                    }
-                    
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                        ForEach(question.options, id: \.self) { option in
-                            Button(action: {
-                                selectedAnswer = option
-                                checkAnswer(option: option)
-                            }) {
-                                Text(option)
-                                    .font(.headline)
-                                    .foregroundColor(.white)
-                                    .frame(width: 160, height: 190)
-                                    .background(getButtonColor(for: option))
-                                    .cornerRadius(15)
-                                    .shadow(radius: 4)
+                    if hearts == 0 {
+                        VStack {
+                            Text("Out of Hearts! ❤️")
+                                .font(.title)
+                                .bold()
+                                .padding()
+                            
+                            Button("Try Again Tomorrow") {
+                                dismiss()
                             }
-                            .disabled(showFeedback)
+                            .padding()
+                            .background(Color.red)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
                         }
+                    } else {
+                        let question = questions[currentQuestionIndex]
+                        
+                        VStack(spacing: 10) {
+                            Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
+                                .font(.headline)
+                            
+                            Text(question.questionText)
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .multilineTextAlignment(.center)
+                        }
+                        
+                        if let image = question.image {
+                            Image(image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 200, height: 140)
+                                .padding()
+                        }
+                        
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                            ForEach(question.options, id: \.self) { option in
+                                Button(action: {
+                                    selectedAnswer = option
+                                    checkAnswer(option: option)
+                                }) {
+                                    Text(option)
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(width: 160, height: 190)
+                                        .background(getButtonColor(for: option))
+                                        .cornerRadius(15)
+                                        .shadow(radius: 4)
+                                }
+                                .disabled(showFeedback)
+                            }
+                        }
+                        .padding()
                     }
-                    .padding()
                 }
             }
             .padding()
-            .onDisappear { handleExit() } // ✅ Detect early exits
+            .onDisappear { handleExit() }
             .sheet(isPresented: $showResultModal) {
                 FeedbackModal(
                     isCorrect: isCorrect ?? false,
@@ -85,6 +131,7 @@ struct QuizView: View {
                 .presentationDetents([.fraction(0.3)], selection: $selectedDetent)
             }
             
+            // 🎉 Fixed Streak Popup Auto-Dismiss
             if showStreakPopup {
                 StreakCongratsView()
                     .transition(.scale)
@@ -92,8 +139,24 @@ struct QuizView: View {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             showStreakPopup = true
                         }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            withAnimation {
+                                showStreakPopup = false
+                            }
+                        }
                     }
             }
+        }
+    }
+
+    // ✅ Reset hearts if 24 hours have passed
+    func resetHeartsIfNeeded() {
+        let currentTime = Date().timeIntervalSince1970
+        let timeDifference = currentTime - lastHeartReset
+
+        if timeDifference > 86400 { // 24 hours
+            hearts = 5
+            lastHeartReset = currentTime
         }
     }
 
@@ -116,7 +179,7 @@ struct QuizView: View {
         }
     }
     
-    // ✅ Check if the answer is correct
+    // ✅ Check if the answer is correct and deduct hearts if wrong
     func checkAnswer(option: String) {
         let question = questions[currentQuestionIndex]
         isCorrect = option == question.correctAnswer
@@ -124,18 +187,17 @@ struct QuizView: View {
         
         if isCorrect == true {
             correctStreak += 1
-            xp += 10 // ✅ Award XP for correct answers
+            xp += 10 // 🏆 Award XP for correct answers
             
             if correctStreak == 5 {
                 showStreakPopup = true
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                    showStreakPopup = false
-                    correctStreak = 0
-                }
+                correctStreak = 0
             }
         } else {
             correctStreak = 0
+            if hearts > 0 {
+                hearts -= 1 // ❤️ Deduct a heart for wrong answer
+            }
         }
         
         if currentQuestionIndex + 1 < questions.count {
