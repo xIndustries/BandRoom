@@ -16,7 +16,7 @@ struct QuizView: View {
     @State private var showStreakPopup = false
     @State private var selectedDetent: PresentationDetent = .fraction(0.3)
 
-    @AppStorage("xp") private var xp: Int = 0 // 🏆 XP Tracking
+    @AppStorage("xp") private var xp: Int = 0 // ✅ XP storage
     @AppStorage("hearts") private var hearts: Int = 5 // ❤️ Heart system
     @AppStorage("lastHeartReset") private var lastHeartReset: TimeInterval = Date().timeIntervalSince1970
 
@@ -25,7 +25,7 @@ struct QuizView: View {
     var body: some View {
         ZStack {
             VStack {
-                // ❤️ Display Hearts & XP Bar
+                // ❤️ Display Hearts
                 HStack {
                     ForEach(0..<hearts, id: \.self) { _ in
                         Image(systemName: "heart.fill")
@@ -34,17 +34,6 @@ struct QuizView: View {
                     ForEach(0..<(5 - hearts), id: \.self) { _ in
                         Image(systemName: "heart")
                             .foregroundColor(.gray)
-                    }
-                    
-                    Spacer()
-                    
-                    // 🏆 XP Display
-                    HStack {
-                        Image(systemName: "star.fill")
-                            .foregroundColor(.yellow)
-                        Text("\(xp) XP")
-                            .font(.headline)
-                            .foregroundColor(.yellow)
                     }
                 }
                 .padding()
@@ -57,7 +46,8 @@ struct QuizView: View {
                         }
                 } else if quizCompleted {
                     QuizCompletedView(onExit: {
-                        onComplete(lessonNumber)
+                        awardXP() // ✅ Award XP when lesson is completed
+                        onComplete(lessonNumber) // ✅ Ensure lesson progress updates
                         dismiss()
                     })
                 } else {
@@ -131,7 +121,6 @@ struct QuizView: View {
                 .presentationDetents([.fraction(0.3)], selection: $selectedDetent)
             }
             
-            // 🎉 Fixed Streak Popup Auto-Dismiss
             if showStreakPopup {
                 StreakCongratsView()
                     .transition(.scale)
@@ -187,7 +176,6 @@ struct QuizView: View {
         
         if isCorrect == true {
             correctStreak += 1
-            xp += 10 // 🏆 Award XP for correct answers
             
             if correctStreak == 5 {
                 showStreakPopup = true
@@ -205,6 +193,12 @@ struct QuizView: View {
         } else {
             quizCompleted = true
         }
+    }
+    
+    // ✅ Award XP when lesson is completed
+    func awardXP() {
+        print("🎉 Awarding 20 XP for lesson completion!")
+        xp += 20 // ✅ Add XP only when lesson is done
     }
     
     // ✅ Move to the next question

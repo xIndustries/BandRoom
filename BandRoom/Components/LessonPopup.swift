@@ -31,7 +31,7 @@ struct LessonPopup: View {
                             .font(.headline)
                             .bold()
                         
-                        Text("+20 XP")
+                        Text("+10 XP")
                             .font(.headline)
                             .bold()
                     }
