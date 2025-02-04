@@ -25,7 +25,7 @@
       "questionType": "multipleChoice",
       "options": ["2/4", "3/4", "4/4", "6/8"],
       "correctAnswer": "4/4",
-      "image": "time_signature.png",
+      "image": "4_4.png",
       "audio": null,
       "difficulty": "easy",
       "hint": "This is the most common time signature.",

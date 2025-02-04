@@ -2,7 +2,7 @@ import SwiftUI
 
 struct QuizView: View {
     let lessonNumber: Int
-    let onComplete: (Int) -> Void // ✅ Accepts lesson completion callback
+    let onComplete: (Int) -> Void // ✅ Callback for lesson completion
 
     @State private var questions: [Question] = []
     @State private var currentQuestionIndex = 0
@@ -16,6 +16,8 @@ struct QuizView: View {
     @State private var showStreakPopup = false
     @State private var selectedDetent: PresentationDetent = .fraction(0.3)
 
+    @AppStorage("xp") private var xp: Int = 0 // ✅ XP storage
+
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -26,7 +28,7 @@ struct QuizView: View {
                         .onAppear { loadQuestions() }
                 } else if quizCompleted {
                     QuizCompletedView(onExit: {
-                        onComplete(lessonNumber) // ✅ Call completion function when user exits
+                        onComplete(lessonNumber) // ✅ Ensure XP & lesson progress update on exit
                         dismiss()
                     })
                 } else {
@@ -71,10 +73,7 @@ struct QuizView: View {
                 }
             }
             .padding()
-            .onDisappear {
-                print("⏳ onDisappear triggered") // Debug print
-                handleExit()
-            }
+            .onDisappear { handleExit() } // ✅ Detect early exits
             .sheet(isPresented: $showResultModal) {
                 FeedbackModal(
                     isCorrect: isCorrect ?? false,
@@ -98,6 +97,7 @@ struct QuizView: View {
         }
     }
 
+    // ✅ Load questions from JSON
     func loadQuestions() {
         let fileName = "Lesson_\(lessonNumber)"
         
@@ -116,6 +116,7 @@ struct QuizView: View {
         }
     }
     
+    // ✅ Check if the answer is correct
     func checkAnswer(option: String) {
         let question = questions[currentQuestionIndex]
         isCorrect = option == question.correctAnswer
@@ -123,6 +124,8 @@ struct QuizView: View {
         
         if isCorrect == true {
             correctStreak += 1
+            xp += 10 // ✅ Award XP for correct answers
+            
             if correctStreak == 5 {
                 showStreakPopup = true
                 
@@ -138,11 +141,11 @@ struct QuizView: View {
         if currentQuestionIndex + 1 < questions.count {
             showResultModal = true
         } else {
-            print("✅ Quiz completed!") // Debug print
             quizCompleted = true
         }
     }
     
+    // ✅ Move to the next question
     func nextQuestion() {
         if currentQuestionIndex + 1 < questions.count {
             currentQuestionIndex += 1
@@ -151,32 +154,18 @@ struct QuizView: View {
             isCorrect = nil
             showResultModal = false
         } else {
-            print("✅ All questions answered! Marking quiz as complete.") // Debug print
             quizCompleted = true
         }
     }
 
+    // ✅ Handle user leaving the quiz
     func handleExit() {
         if !quizCompleted {
-            print("❌ User exited early! Progress will NOT be updated.") // Debug print
             exitedEarly = true
         }
-        updateLessonProgress()
     }
 
-    func updateLessonProgress() {
-        if !quizCompleted || exitedEarly {
-            print("🚫 Progress NOT updated. Reason: \(exitedEarly ? "Exited early" : "Quiz not complete")") // Debug print
-            return
-        }
-
-        let currentLesson = UserDefaults.standard.integer(forKey: "currentLessonIndex")
-        if currentLesson == lessonNumber - 1 {
-            print("✅ Lesson \(lessonNumber) completed! Unlocking next lesson.") // Debug print
-            UserDefaults.standard.set(currentLesson + 1, forKey: "currentLessonIndex")
-        }
-    }
-    
+    // ✅ Change button color based on selection
     func getButtonColor(for option: String) -> Color {
         if showFeedback {
             return option == questions[currentQuestionIndex].correctAnswer ? .green : .red
@@ -185,7 +174,7 @@ struct QuizView: View {
     }
 }
 
-// ✅ Fixed Preview
+// ✅ Preview
 struct QuizView_Previews: PreviewProvider {
     static var previews: some View {
         QuizView(lessonNumber: 1, onComplete: { _ in })

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
+    @AppStorage("xp") private var xp: Int = 0 // ✅ XP Tracking
     @AppStorage("currentLessonIndex") private var currentLessonIndex: Int = 0 // ✅ Persist lesson progress
     @AppStorage("completedLessons") private var completedLessons: String = "" // ✅ Track completed lessons
 
@@ -68,14 +69,17 @@ struct HomeView: View {
             VStack(alignment: .leading) {
                 Text("Welcome Back!")
                     .font(.headline)
+                
                 Text("Streak: 0 days")
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
             Spacer()
-            Text("XP: 0")
+            
+            // ✅ XP Display
+            Text("XP: \(xp)")
                 .font(.headline)
-                .padding()
+                .padding(10)
                 .background(Color.yellow.opacity(0.2))
                 .clipShape(Capsule())
         }
@@ -93,10 +97,11 @@ struct HomeView: View {
 
                 ForEach(lessons.indices, id: \.self) { index in
                     let isCompleted = isLessonCompleted(lessonID: lessons[index].id)
+                    
                     LessonButton(
                         lesson: lessons[index],
                         isUnlocked: index <= currentLessonIndex,
-                        isCompleted: isCompleted // ✅ Pass completed status
+                        isCompleted: isCompleted // ✅ Show checkmark if completed
                     ) {
                         if index == currentLessonIndex {
                             selectedLesson = lessons[index]
@@ -128,9 +133,14 @@ struct HomeView: View {
         completedSet.insert(lessonID)
 
         completedLessons = completedSet.joined(separator: ",") // ✅ Save progress
+
+        // ✅ Unlock next lesson only if the user is on the latest lesson
         if lessonNumber - 1 == currentLessonIndex {
-            currentLessonIndex += 1 // ✅ Unlock the next lesson
+            currentLessonIndex += 1
         }
+
+        // ✅ Add XP for completing a lesson
+        xp += 10 // 🎉 Earn 10 XP per lesson
     }
 
     // ✅ Check if a lesson is completed
@@ -151,7 +161,7 @@ struct LessonUI: Identifiable {
 struct LessonButton: View {
     let lesson: LessonUI
     let isUnlocked: Bool
-    let isCompleted: Bool // ✅ New property to show checkmark
+    let isCompleted: Bool // ✅ Show checkmark only if completed
     let onTap: () -> Void
 
     var body: some View {
