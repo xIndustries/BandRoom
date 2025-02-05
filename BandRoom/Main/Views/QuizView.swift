@@ -17,8 +17,8 @@ struct QuizView: View {
     @State private var selectedDetent: PresentationDetent = .fraction(0.3)
 
     @AppStorage("xp") private var xp: Int = 0 // ✅ XP storage
-    @AppStorage("hearts") private var hearts: Int = 5 // ❤️ Heart system
-    @AppStorage("lastHeartReset") private var lastHeartReset: TimeInterval = Date().timeIntervalSince1970
+    @AppStorage("hearts") private var hearts: Int = 5 // ❤️ Heart system (Max: 5)
+    @AppStorage("lastHeartUpdate") private var lastHeartUpdate: TimeInterval = Date().timeIntervalSince1970
 
     @Environment(\.dismiss) var dismiss
 
@@ -41,7 +41,7 @@ struct QuizView: View {
                 if questions.isEmpty {
                     ProgressView("Loading Questions...")
                         .onAppear {
-                            resetHeartsIfNeeded()
+                            restoreHeartsIfNeeded() // ✅ Check if hearts need regeneration
                             loadQuestions()
                         }
                 } else if quizCompleted {
@@ -53,12 +53,12 @@ struct QuizView: View {
                 } else {
                     if hearts == 0 {
                         VStack {
-                            Text("Out of Hearts! ❤️")
+                            Text("Out of Hearts! ❤️. Hearts will be generated one every hour.")
                                 .font(.title)
                                 .bold()
                                 .padding()
                             
-                            Button("Try Again Tomorrow") {
+                            Button("Try Again Later") {
                                 dismiss()
                             }
                             .padding()
@@ -138,14 +138,18 @@ struct QuizView: View {
         }
     }
 
-    // ✅ Reset hearts if 24 hours have passed
-    func resetHeartsIfNeeded() {
+    // ✅ Restore 1 heart per hour (Max: 5)
+    func restoreHeartsIfNeeded() {
         let currentTime = Date().timeIntervalSince1970
-        let timeDifference = currentTime - lastHeartReset
+        let elapsedTime = currentTime - lastHeartUpdate
 
-        if timeDifference > 86400 { // 24 hours
-            hearts = 5
-            lastHeartReset = currentTime
+        let hoursPassed = Int(elapsedTime) / 3600 // Convert seconds to hours
+
+        if hoursPassed >= 1 && hearts < 5 {
+            let heartsToRestore = min(hoursPassed, 5 - hearts) // Prevent exceeding max
+            hearts += heartsToRestore
+            lastHeartUpdate = currentTime // Reset update timestamp
+            print("❤️ Restored \(heartsToRestore) hearts! Current: \(hearts)")
         }
     }
 
@@ -185,6 +189,7 @@ struct QuizView: View {
             correctStreak = 0
             if hearts > 0 {
                 hearts -= 1 // ❤️ Deduct a heart for wrong answer
+                lastHeartUpdate = Date().timeIntervalSince1970 // Track last heart deduction
             }
         }
         
