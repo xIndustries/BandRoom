@@ -11,14 +11,19 @@ struct QuizView: View {
     @State private var isCorrect: Bool?
     @State private var showResultModal = false
     @State private var quizCompleted = false
-    @State private var exitedEarly = false // ✅ Track early exits
+    @State private var exitedEarly = false
     @State private var correctStreak: Int = 0
     @State private var showStreakPopup = false
     @State private var selectedDetent: PresentationDetent = .fraction(0.3)
+    @State private var showExitAlert = false // ✅ Exit confirmation alert
 
-    @AppStorage("xp") private var xp: Int = 0 // ✅ XP storage
-    @AppStorage("hearts") private var hearts: Int = 5 // ❤️ Heart system (Max: 5)
+    @AppStorage("xp") private var xp: Int = 0
+    @AppStorage("hearts") private var hearts: Int = 5
     @AppStorage("lastHeartUpdate") private var lastHeartUpdate: TimeInterval = Date().timeIntervalSince1970
+
+    // ✅ Daily Streak System
+    @AppStorage("streak") private var streak: Int = 0
+    @AppStorage("lastSessionDate") private var lastSessionDate: String = ""
 
     @Environment(\.dismiss) var dismiss
 
@@ -41,21 +46,23 @@ struct QuizView: View {
                 if questions.isEmpty {
                     ProgressView("Loading Questions...")
                         .onAppear {
-                            restoreHeartsIfNeeded() // ✅ Check if hearts need regeneration
+                            restoreHeartsIfNeeded()
                             loadQuestions()
                         }
                 } else if quizCompleted {
                     QuizCompletedView(onExit: {
-                        awardXP() // ✅ Award XP when lesson is completed
-                        onComplete(lessonNumber) // ✅ Ensure lesson progress updates
+                        updateDailyStreak() // ✅ Update streak
+                        awardXP() // ✅ XP after lesson completion
+                        onComplete(lessonNumber)
                         dismiss()
                     })
                 } else {
                     if hearts == 0 {
                         VStack {
-                            Text("Out of Hearts! ❤️. Hearts will be generated one every hour.")
+                            Text("Out of Hearts! ❤️\nA heart regenerates every hour.")
                                 .font(.title)
                                 .bold()
+                                .multilineTextAlignment(.center)
                                 .padding()
                             
                             Button("Try Again Later") {
@@ -109,7 +116,18 @@ struct QuizView: View {
                 }
             }
             .padding()
-            .onDisappear { handleExit() }
+            .navigationBarBackButtonHidden(true) // ✅ Hide default back button
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        showExitAlert = true // ✅ Trigger exit confirmation
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.title)
+                    }
+                }
+            }
+            .onDisappear { handleExit() } // ✅ Keep original functionality
             .sheet(isPresented: $showResultModal) {
                 FeedbackModal(
                     isCorrect: isCorrect ?? false,
@@ -125,16 +143,22 @@ struct QuizView: View {
                 StreakCongratsView()
                     .transition(.scale)
                     .onAppear {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            showStreakPopup = true
-                        }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                            withAnimation {
-                                showStreakPopup = false
-                            }
+                            withAnimation { showStreakPopup = false }
                         }
                     }
             }
+        }
+        .alert(isPresented: $showExitAlert) {
+            Alert(
+                title: Text("Exit Quiz?"),
+                message: Text("Any lost hearts will NOT be restored. Are you sure?"),
+                primaryButton: .destructive(Text("Exit")) {
+                    handleExit()
+                    dismiss()
+                },
+                secondaryButton: .cancel()
+            )
         }
     }
 
@@ -143,12 +167,12 @@ struct QuizView: View {
         let currentTime = Date().timeIntervalSince1970
         let elapsedTime = currentTime - lastHeartUpdate
 
-        let hoursPassed = Int(elapsedTime) / 3600 // Convert seconds to hours
+        let hoursPassed = Int(elapsedTime) / 3600
 
         if hoursPassed >= 1 && hearts < 5 {
-            let heartsToRestore = min(hoursPassed, 5 - hearts) // Prevent exceeding max
+            let heartsToRestore = min(hoursPassed, 5 - hearts)
             hearts += heartsToRestore
-            lastHeartUpdate = currentTime // Reset update timestamp
+            lastHeartUpdate = currentTime
             print("❤️ Restored \(heartsToRestore) hearts! Current: \(hearts)")
         }
     }
@@ -171,7 +195,7 @@ struct QuizView: View {
             print("❌ Error loading questions: \(error)")
         }
     }
-    
+
     // ✅ Check if the answer is correct and deduct hearts if wrong
     func checkAnswer(option: String) {
         let question = questions[currentQuestionIndex]
@@ -188,8 +212,8 @@ struct QuizView: View {
         } else {
             correctStreak = 0
             if hearts > 0 {
-                hearts -= 1 // ❤️ Deduct a heart for wrong answer
-                lastHeartUpdate = Date().timeIntervalSince1970 // Track last heart deduction
+                hearts -= 1
+                lastHeartUpdate = Date().timeIntervalSince1970
             }
         }
         
@@ -199,13 +223,12 @@ struct QuizView: View {
             quizCompleted = true
         }
     }
-    
+
     // ✅ Award XP when lesson is completed
     func awardXP() {
-        print("🎉 Awarding 20 XP for lesson completion!")
-        xp += 20 // ✅ Add XP only when lesson is done
+        xp += 20
     }
-    
+
     // ✅ Move to the next question
     func nextQuestion() {
         if currentQuestionIndex + 1 < questions.count {
@@ -218,12 +241,22 @@ struct QuizView: View {
             quizCompleted = true
         }
     }
-
+    
     // ✅ Handle user leaving the quiz
     func handleExit() {
         if !quizCompleted {
             exitedEarly = true
+            print("❌ User exited early! Hearts will NOT be restored.")
         }
+    }
+
+    // ✅ Update daily streak
+    func updateDailyStreak() {
+        let today = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)
+        if lastSessionDate != today {
+            streak += 1
+        }
+        lastSessionDate = today
     }
 
     // ✅ Change button color based on selection
@@ -235,9 +268,6 @@ struct QuizView: View {
     }
 }
 
-// ✅ Preview
-struct QuizView_Previews: PreviewProvider {
-    static var previews: some View {
-        QuizView(lessonNumber: 1, onComplete: { _ in })
-    }
+#Preview {
+    QuizView(lessonNumber: 1, onComplete: { _ in })
 }
