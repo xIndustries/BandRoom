@@ -61,6 +61,7 @@ struct MainTabBarView: View {
     }
 }
 
+// ✅ Updated `TabBarButton` with filled and non-filled icons
 struct TabBarButton: View {
     let image: String
     let isSelected: Bool
@@ -68,7 +69,7 @@ struct TabBarButton: View {
     
     var body: some View {
         Button(action: action) {
-            Image(systemName: image)
+            Image(systemName: isSelected ? "\(image).fill" : image) // ✅ Toggle filled version
                 .font(.system(size: 18, weight: .medium))
                 .foregroundColor(isSelected ? Color.white : Color.gray)
                 .frame(width: 50, height: 50)
@@ -78,6 +79,7 @@ struct TabBarButton: View {
     }
 }
 
+// ✅ Preview
 struct MainTabBarView_Previews: PreviewProvider {
     static var previews: some View {
         MainTabBarView()
