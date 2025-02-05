@@ -51,7 +51,7 @@ struct QuizView: View {
                         }
                 } else if quizCompleted {
                     QuizCompletedView(onExit: {
-                        updateDailyStreak() // ✅ Update streak
+                        updateDailyStreak() // ✅ FIXED: Re-added function
                         awardXP() // ✅ XP after lesson completion
                         onComplete(lessonNumber)
                         dismiss()
@@ -104,7 +104,11 @@ struct QuizView: View {
                                         .font(.headline)
                                         .foregroundColor(.white)
                                         .frame(width: 160, height: 190)
-                                        .background(getButtonColor(for: option))
+                                        .background(getButtonColor(
+                                            for: option,
+                                            correctAnswer: question.correctAnswer,
+                                            showFeedback: showFeedback
+                                        ))
                                         .cornerRadius(15)
                                         .shadow(radius: 4)
                                 }
@@ -116,18 +120,18 @@ struct QuizView: View {
                 }
             }
             .padding()
-            .navigationBarBackButtonHidden(true) // ✅ Hide default back button
+            .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
-                        showExitAlert = true // ✅ Trigger exit confirmation
+                        showExitAlert = true
                     }) {
                         Image(systemName: "chevron.left")
                             .font(.title)
                     }
                 }
             }
-            .onDisappear { handleExit() } // ✅ Keep original functionality
+            .onDisappear { handleExit() }
             .sheet(isPresented: $showResultModal) {
                 FeedbackModal(
                     isCorrect: isCorrect ?? false,
@@ -196,6 +200,21 @@ struct QuizView: View {
         }
     }
 
+    // ✅ Update daily streak
+    func updateDailyStreak() {
+        let today = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)
+        let yesterday = DateFormatter.localizedString(from: Calendar.current.date(byAdding: .day, value: -1, to: Date())!, dateStyle: .short, timeStyle: .none)
+
+        if lastSessionDate == yesterday {
+            streak += 1
+            showStreakPopup = true
+        } else if lastSessionDate != today {
+            streak = 1
+        }
+
+        lastSessionDate = today
+    }
+
     // ✅ Check if the answer is correct and deduct hearts if wrong
     func checkAnswer(option: String) {
         let question = questions[currentQuestionIndex]
@@ -241,30 +260,13 @@ struct QuizView: View {
             quizCompleted = true
         }
     }
-    
+
     // ✅ Handle user leaving the quiz
     func handleExit() {
         if !quizCompleted {
             exitedEarly = true
             print("❌ User exited early! Hearts will NOT be restored.")
         }
-    }
-
-    // ✅ Update daily streak
-    func updateDailyStreak() {
-        let today = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)
-        if lastSessionDate != today {
-            streak += 1
-        }
-        lastSessionDate = today
-    }
-
-    // ✅ Change button color based on selection
-    func getButtonColor(for option: String) -> Color {
-        if showFeedback {
-            return option == questions[currentQuestionIndex].correctAnswer ? .green : .red
-        }
-        return Color.blue
     }
 }
 
