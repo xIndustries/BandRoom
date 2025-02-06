@@ -50,12 +50,19 @@ struct QuizView: View {
                             loadQuestions()
                         }
                 } else if quizCompleted {
+//                    QuizCompletedView(onExit: {
+//                        updateDailyStreak()
+//                        awardXP()
+//                        onComplete(lessonNumber)
+//                        dismiss()
+//                    })
+                    // ❌ REMOVE `awardXP()` CALL FROM QUIZ COMPLETION
                     QuizCompletedView(onExit: {
                         updateDailyStreak()
-                        awardXP()
-                        onComplete(lessonNumber)
+                        onComplete(lessonNumber) // ✅ Calls HomeView's markLessonCompleted()
                         dismiss()
                     })
+
                 } else {
                     if hearts == 0 {
                         VStack {

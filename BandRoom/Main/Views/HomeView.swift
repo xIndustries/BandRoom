@@ -21,7 +21,7 @@ struct HomeView: View {
         ZStack {
             VStack {
                 // 👤 Profile & XP Progress
-                userProfileSection()
+                UserProfileView()
                 
                 // 📚 Lessons List
                 lessonScrollView()
@@ -53,43 +53,6 @@ struct HomeView: View {
             }
         }
         .background(Color(.systemGray6).edgesIgnoringSafeArea(.all))
-    }
-
-    // 🏆 Profile & XP Progress Bar
-    private func userProfileSection() -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .frame(width: 50, height: 50)
-                    .foregroundColor(.blue)
-
-                VStack(alignment: .leading) {
-                    Text("Welcome Back!")
-                        .font(.headline)
-
-                    Text("XP: \(xp)")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                }
-                Spacer()
-            }
-
-            // 🎯 XP Progress Bar
-            ProgressView(value: Double(xp) / 100.0)
-                .progressViewStyle(LinearProgressViewStyle(tint: .blue))
-                .frame(height: 8)
-                .clipShape(Capsule())
-                .background(Color.white.opacity(0.2))
-                .padding(.top)
-            
-            Text("LEVEL UP at 100 XP!")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .padding(.top, 2)
-        }
-        .padding(.horizontal)
-        .padding(.top, 20)
     }
 
     // 📖 Lesson Scroll View
@@ -132,19 +95,25 @@ struct HomeView: View {
         return Int(id.split(separator: " ").last!) ?? 1
     }
 
-    // ✅ Mark Lesson as Completed
+    // ✅ FIXED: Mark Lesson as Completed (Ensures XP Only Increases Once)
     private func markLessonCompleted(lessonNumber: Int) {
         let lessonID = lessons[lessonNumber - 1].id
         var completedSet = Set(completedLessons.split(separator: ",").map(String.init))
-        completedSet.insert(lessonID)
 
-        completedLessons = completedSet.joined(separator: ",")
+        if !completedSet.contains(lessonID) {  // ✅ Only add XP if lesson is not already completed
+            completedSet.insert(lessonID)
+            completedLessons = completedSet.joined(separator: ",")
 
-        if lessonNumber - 1 == currentLessonIndex {
-            currentLessonIndex += 1
+            // ✅ Unlock next lesson only if the user is on the latest lesson
+            if lessonNumber - 1 == currentLessonIndex {
+                currentLessonIndex += 1
+            }
+
+            xp += 10  // 🎉 FIXED: XP Now Only Adds Once
+            print("✅ XP Updated: \(xp) (Lesson \(lessonNumber) Completed)")
+        } else {
+            print("⚠️ Lesson \(lessonNumber) was already completed. No XP added.")
         }
-
-        xp += 10 // 🎉 Earn 10 XP per lesson
     }
 
     // ✅ Check if Lesson is Completed
