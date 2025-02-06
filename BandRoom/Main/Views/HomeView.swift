@@ -60,7 +60,8 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Grade 1")
-                    .font(.title2.bold())
+                    .font(.headline)
+                    .fontWeight(.semibold)
                     .padding(.horizontal)
                     .padding(.top, 10)
 
