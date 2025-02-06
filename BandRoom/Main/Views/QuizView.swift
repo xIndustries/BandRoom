@@ -182,6 +182,25 @@ struct QuizView: View {
     }
 
     // ✅ Load questions from JSON
+//    func loadQuestions() {
+//        let fileName = "Lesson_\(lessonNumber)"
+//        
+//        guard let url = Bundle.main.url(forResource: fileName, withExtension: "json") else {
+//            print("❌ Lesson JSON file not found: \(fileName).json")
+//            return
+//        }
+//        
+//        do {
+//            let data = try Data(contentsOf: url)
+//            let lesson = try JSONDecoder().decode(LessonData.self, from: data)
+//            questions = lesson.questions
+//            print("✅ Successfully loaded \(fileName).json")
+//        } catch {
+//            print("❌ Error loading questions: \(error)")
+//        }
+//    }
+    
+    // ✅ Load and shuffle questions from JSON
     func loadQuestions() {
         let fileName = "Lesson_\(lessonNumber)"
         
@@ -193,12 +212,13 @@ struct QuizView: View {
         do {
             let data = try Data(contentsOf: url)
             let lesson = try JSONDecoder().decode(LessonData.self, from: data)
-            questions = lesson.questions
-            print("✅ Successfully loaded \(fileName).json")
+            questions = lesson.questions.shuffled() // ✅ Shuffle questions randomly
+            print("✅ Successfully loaded \(fileName).json with \(questions.count) shuffled questions")
         } catch {
             print("❌ Error loading questions: \(error)")
         }
     }
+
 
     // ✅ Update daily streak
     func updateDailyStreak() {
