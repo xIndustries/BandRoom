@@ -114,7 +114,7 @@
       "category": "Scales",
       "questionText": "Which scale has F# in it?",
       "questionType": "multipleChoice",
-      "options": ["C Major", "G Major", "A Minor", "D Major"],
+      "options": ["C Major", "G Major", "A Minor", "Bb Major"],
       "correctAnswer": "G Major",
       "image": "g_major_scale.png",
       "audio": null,

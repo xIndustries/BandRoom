@@ -1,42 +1,42 @@
 import SwiftUI
 
 struct HomeView: View {
-    @AppStorage("xp") private var xp: Int = 0 // ✅ XP Tracking
-    @AppStorage("currentLessonIndex") private var currentLessonIndex: Int = 0 // ✅ Persist lesson progress
-    @AppStorage("completedLessons") private var completedLessons: String = "" // ✅ Track completed lessons
+    @AppStorage("xp") private var xp: Int = 0
+    @AppStorage("currentLessonIndex") private var currentLessonIndex: Int = 0
+    @AppStorage("completedLessons") private var completedLessons: String = ""
 
     @State private var selectedLesson: LessonUI?
     @State private var showLessonPopup = false
     @State private var navigateToQuiz = false
 
     let lessons = [
-        LessonUI(id: "Lesson 1", title: "SECTION 1, UNIT 1", title2: "Introduction to notes", icon: "music.note"),
-        LessonUI(id: "Lesson 2", title: "SECTION 1, UNIT 2", title2: "Introduction to notes", icon: "music.note"),
-        LessonUI(id: "Lesson 3", title: "SECTION 1, UNIT 3", title2: "Introduction to notes", icon: "music.note"),
-        LessonUI(id: "Lesson 4", title: "SECTION 1, UNIT 4", title2: "Introduction to notes", icon: "music.note"),
-        LessonUI(id: "Lesson 5", title: "SECTION 1, UNIT 5", title2: "Introduction to notes", icon: "music.note")
+        LessonUI(id: "Lesson 1", title: "SECTION 1, UNIT 1", title2: "Introduction to Notes", icon: "music.note.list"),
+        LessonUI(id: "Lesson 2", title: "SECTION 1, UNIT 2", title2: "Rhythms & Timing", icon: "music.quarternote.3"),
+        LessonUI(id: "Lesson 3", title: "SECTION 1, UNIT 3", title2: "Notes & Rests", icon: "music.note.house.fill"),
+        LessonUI(id: "Lesson 4", title: "SECTION 1, UNIT 4", title2: "Reading Sheet Music", icon: "doc.text.image"),
+        LessonUI(id: "Lesson 5", title: "SECTION 1, UNIT 5", title2: "Understanding Scales", icon: "chart.bar.doc.horizontal.fill")
     ]
 
     var body: some View {
         ZStack {
             VStack {
-                // Profile & XP Progress
+                // 👤 Profile & XP Progress
                 userProfileSection()
-
-                // Lesson Grid
+                
+                // 📚 Lessons List
                 lessonScrollView()
             }
             .onAppear {
-                refreshLessonProgress() // ✅ Ensure lessons refresh when returning to HomeView
+                refreshLessonProgress()
             }
             .navigationDestination(isPresented: $navigateToQuiz) {
                 if let selectedLesson = selectedLesson {
                     let lessonNumber = extractLessonNumber(from: selectedLesson.id)
-                    QuizView(lessonNumber: lessonNumber, onComplete: markLessonCompleted) // ✅ Pass completion callback
+                    QuizView(lessonNumber: lessonNumber, onComplete: markLessonCompleted)
                 }
             }
 
-            // ✅ Show LessonPopup as an overlay (NOT a modal)
+            // ✨ Floating Lesson Popup
             if showLessonPopup, let lesson = selectedLesson {
                 LessonPopup(
                     lesson: lesson,
@@ -50,106 +50,112 @@ struct HomeView: View {
                     }
                 )
                 .transition(.scale)
-                .onAppear {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        showLessonPopup = true
-                    }
-                }
             }
         }
+        .background(Color(.systemGray6).edgesIgnoringSafeArea(.all))
     }
 
-    // ✅ Profile & XP Section
+    // 🏆 Profile & XP Progress Bar
     private func userProfileSection() -> some View {
-        HStack {
-            Image(systemName: "person.crop.circle.fill")
-                .resizable()
-                .frame(width: 50, height: 50)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "person.crop.circle.fill")
+                    .resizable()
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(.blue)
 
-            VStack(alignment: .leading) {
-                Text("Welcome Back!")
-                    .font(.headline)
-                
-                Text("Streak: 0 days")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                VStack(alignment: .leading) {
+                    Text("Welcome Back!")
+                        .font(.headline)
+
+                    Text("XP: \(xp)")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
+                Spacer()
             }
-            Spacer()
-            
-            // ✅ XP Display
-            Text("XP: \(xp)")
-                .font(.headline)
-                .padding(10)
-                .background(Color.yellow.opacity(0.2))
+
+            // 🎯 XP Progress Bar
+            ProgressView(value: Double(xp) / 100.0)
+                .progressViewStyle(LinearProgressViewStyle(tint: .blue))
+                .frame(height: 8)
                 .clipShape(Capsule())
+                .background(Color.white.opacity(0.2))
+            
+            Text("LEVEL UP at 100 XP!")
+                .font(.caption)
+                .foregroundColor(.gray)
         }
         .padding(.horizontal)
         .padding(.top, 20)
     }
 
-    // ✅ Lesson List ScrollView
+    // 📖 Lesson Scroll View
     private func lessonScrollView() -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text("Grade 1")
+            VStack(alignment: .leading, spacing: 12) {
+                Text("📚 Lessons")
                     .font(.title2.bold())
-                    .foregroundColor(.primary)
+//                    .padding(.horizontal)
+                
+                Text("Introduction to notes")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+//                    .padding(.horizontal)
 
                 ForEach(lessons.indices, id: \.self) { index in
                     let isCompleted = isLessonCompleted(lessonID: lessons[index].id)
-                    
+                    let isUnlocked = index <= currentLessonIndex
+
                     LessonButton(
                         lesson: lessons[index],
-                        isUnlocked: index <= currentLessonIndex,
-                        isCompleted: isCompleted // ✅ Show checkmark if completed
+                        isUnlocked: isUnlocked,
+                        isCompleted: isCompleted
                     ) {
-                        if index == currentLessonIndex {
+                        if isUnlocked {
                             selectedLesson = lessons[index]
                             showLessonPopup = true
                         }
                     }
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
+            .padding(.horizontal)
         }
     }
 
-    // ✅ Refresh lesson progress when navigating back to HomeView
+    // 🔄 Refresh Lesson Progress
     private func refreshLessonProgress() {
         let savedLessonIndex = UserDefaults.standard.integer(forKey: "currentLessonIndex")
         currentLessonIndex = savedLessonIndex
     }
 
-    // ✅ Extract lesson number from ID
+    // 🔢 Extract Lesson Number
     private func extractLessonNumber(from id: String) -> Int {
         return Int(id.split(separator: " ").last!) ?? 1
     }
 
-    // ✅ Mark lesson as completed
+    // ✅ Mark Lesson as Completed
     private func markLessonCompleted(lessonNumber: Int) {
         let lessonID = lessons[lessonNumber - 1].id
         var completedSet = Set(completedLessons.split(separator: ",").map(String.init))
         completedSet.insert(lessonID)
 
-        completedLessons = completedSet.joined(separator: ",") // ✅ Save progress
+        completedLessons = completedSet.joined(separator: ",")
 
-        // ✅ Unlock next lesson only if the user is on the latest lesson
         if lessonNumber - 1 == currentLessonIndex {
             currentLessonIndex += 1
         }
 
-        // ✅ Add XP for completing a lesson
         xp += 10 // 🎉 Earn 10 XP per lesson
     }
 
-    // ✅ Check if a lesson is completed
+    // ✅ Check if Lesson is Completed
     private func isLessonCompleted(lessonID: String) -> Bool {
         return completedLessons.split(separator: ",").map(String.init).contains(lessonID)
     }
 }
 
-// ✅ Updated UI Model for Lessons
+// 🎵 Updated UI Model
 struct LessonUI: Identifiable {
     let id: String
     let title: String
@@ -157,11 +163,11 @@ struct LessonUI: Identifiable {
     let icon: String
 }
 
-// ✅ Lesson Button UI
+// 📖 Clean Lesson Button (with `title2` added back)
 struct LessonButton: View {
     let lesson: LessonUI
     let isUnlocked: Bool
-    let isCompleted: Bool // ✅ Show checkmark only if completed
+    let isCompleted: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -170,33 +176,27 @@ struct LessonButton: View {
                 onTap()
             }
         }) {
-            HStack(alignment: .center) {
+            HStack {
                 Image(systemName: lesson.icon)
                     .resizable()
-                    .frame(width: 40, height: 40)
+                    .frame(width: 30, height: 30)
                     .foregroundColor(isUnlocked ? .blue : .gray)
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(lesson.title)
                         .font(.subheadline)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .foregroundColor(isUnlocked ? .black : .gray)
+                        .foregroundColor(isUnlocked ? .primary : .gray)
 
-                    Text(lesson.title2)
+                    Text(lesson.title2) // 🔥 `title2` ADDED BACK HERE
                         .font(.headline)
                         .fontWeight(.bold)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .foregroundColor(isUnlocked ? .black : .gray)
+                        .foregroundColor(isUnlocked ? .primary : .gray)
                 }
 
                 Spacer()
 
-                if isCompleted { // ✅ Show checkmark only if completed
+                if isCompleted {
                     Image(systemName: "checkmark.circle.fill")
-                        .resizable()
-                        .frame(width: 24, height: 24)
                         .foregroundColor(.green)
                 } else if !isUnlocked {
                     Image(systemName: "lock.fill")
@@ -206,7 +206,7 @@ struct LessonButton: View {
             .padding()
             .background(isUnlocked ? Color.white : Color.gray.opacity(0.3))
             .clipShape(RoundedRectangle(cornerRadius: 10))
-            .shadow(radius: 2)
+            .shadow(radius: isUnlocked ? 5 : 2)
         }
         .disabled(!isUnlocked)
     }

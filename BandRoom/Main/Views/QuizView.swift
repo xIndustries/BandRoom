@@ -26,7 +26,7 @@ struct QuizView: View {
     @AppStorage("lastSessionDate") private var lastSessionDate: String = ""
 
     @Environment(\.dismiss) var dismiss
-
+    
     var body: some View {
         ZStack {
             VStack {
@@ -41,7 +41,7 @@ struct QuizView: View {
                             .foregroundColor(.gray)
                     }
                 }
-                .padding()
+                .padding(.top, 10)
 
                 if questions.isEmpty {
                     ProgressView("Loading Questions...")
@@ -51,8 +51,8 @@ struct QuizView: View {
                         }
                 } else if quizCompleted {
                     QuizCompletedView(onExit: {
-                        updateDailyStreak() // ✅ FIXED: Re-added function
-                        awardXP() // ✅ XP after lesson completion
+                        updateDailyStreak()
+                        awardXP()
                         onComplete(lessonNumber)
                         dismiss()
                     })
@@ -75,63 +75,60 @@ struct QuizView: View {
                         }
                     } else {
                         let question = questions[currentQuestionIndex]
-                        
-//                        VStack(spacing: 10) {
-//                            Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
-//                                .font(.headline)
-//                            
-//                            Text(question.questionText)
-//                                .font(.title3)
-//                                .fontWeight(.semibold)
-//                                .multilineTextAlignment(.center)
-//                        }
-                        
-                        VStack {
-                            Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
-                                .font(.headline)
-                                .padding(.bottom, 5)
 
-                            Text(question.questionText)
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .multilineTextAlignment(.center)
-                                .frame(maxWidth: .infinity)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .padding(.horizontal, 20)
-                        }
-                        .padding()
+                        VStack(spacing: 12) { // ✅ Spacing between elements
+                            // 📖 Question Number & Text
+                            VStack(spacing: 8) {
+                                Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
+                                    .font(.headline)
 
-                        
-                        if let image = question.image {
-                            Image(image)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 200, height: 140)
-                                .padding()
-                        }
-                        
-                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                            ForEach(question.options, id: \.self) { option in
-                                Button(action: {
-                                    selectedAnswer = option
-                                    checkAnswer(option: option)
-                                }) {
-                                    Text(option)
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .frame(width: 160, height: 190)
-                                        .background(getButtonColor(
-                                            for: option,
-                                            correctAnswer: question.correctAnswer,
-                                            showFeedback: showFeedback
-                                        ))
-                                        .cornerRadius(15)
-                                        .shadow(radius: 4)
-                                }
-                                .disabled(showFeedback)
+                                Text(question.questionText)
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.horizontal, 20)
+                                    .fixedSize(horizontal: false, vertical: true) // ✅ Prevents cut-off text
                             }
+
+                            // 🎵 Image (If available)
+                            if let image = question.image {
+                                Image(image)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 180, height: 120) // ✅ Fixed size
+                                    .padding(.top, 5)
+                            }
+
+                            Spacer() // ✅ Pushes options down
+
+                            // 🟦 Answer Buttons
+                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                                ForEach(question.options, id: \.self) { option in
+                                    Button(action: {
+                                        selectedAnswer = option
+                                        checkAnswer(option: option)
+                                    }) {
+                                        Text(option)
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                            .frame(width: 150, height: 180) // ✅ Uniform size
+                                            .background(getButtonColor(
+                                                for: option,
+                                                correctAnswer: question.correctAnswer,
+                                                showFeedback: showFeedback
+                                            ))
+                                            .cornerRadius(15)
+                                            .shadow(radius: 4)
+                                    }
+                                    .disabled(showFeedback)
+                                }
+                            }
+                            .padding(.horizontal, 20) // ✅ Ensures proper button alignment
+
+                            Spacer()
                         }
-                        .padding()
+                        .padding(.vertical, 20)
                     }
                 }
             }
@@ -181,6 +178,7 @@ struct QuizView: View {
             )
         }
     }
+
 
     // ✅ Restore 1 heart per hour (Max: 5)
     func restoreHeartsIfNeeded() {
