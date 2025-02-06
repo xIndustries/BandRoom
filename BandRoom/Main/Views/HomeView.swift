@@ -11,10 +11,10 @@ struct HomeView: View {
 
     let lessons = [
         LessonUI(id: "Lesson 1", title: "SECTION 1, UNIT 1", title2: "Introduction to Notes", icon: "music.note.list"),
-        LessonUI(id: "Lesson 2", title: "SECTION 1, UNIT 2", title2: "Rhythms & Timing", icon: "music.quarternote.3"),
-        LessonUI(id: "Lesson 3", title: "SECTION 1, UNIT 3", title2: "Notes & Rests", icon: "music.note.house.fill"),
-        LessonUI(id: "Lesson 4", title: "SECTION 1, UNIT 4", title2: "Reading Sheet Music", icon: "doc.text.image"),
-        LessonUI(id: "Lesson 5", title: "SECTION 1, UNIT 5", title2: "Understanding Scales", icon: "chart.bar.doc.horizontal.fill")
+        LessonUI(id: "Lesson 2", title: "SECTION 1, UNIT 2", title2: "Introduction to Notes", icon: "music.note.list"),
+        LessonUI(id: "Lesson 3", title: "SECTION 1, UNIT 3", title2: "Introduction to Notes", icon: "music.note.list"),
+        LessonUI(id: "Lesson 4", title: "SECTION 1, UNIT 4", title2: "Introduction to Notes", icon: "music.note.list"),
+        LessonUI(id: "Lesson 5", title: "SECTION 1, UNIT 5", title2: "Introduction to Notes", icon: "music.note.list")
     ]
 
     var body: some View {
@@ -81,10 +81,12 @@ struct HomeView: View {
                 .frame(height: 8)
                 .clipShape(Capsule())
                 .background(Color.white.opacity(0.2))
+                .padding(.top)
             
             Text("LEVEL UP at 100 XP!")
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundColor(.gray)
+                .padding(.top, 2)
         }
         .padding(.horizontal)
         .padding(.top, 20)
@@ -94,14 +96,10 @@ struct HomeView: View {
     private func lessonScrollView() -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text("📚 Lessons")
+                Text("Grade 1")
                     .font(.title2.bold())
-//                    .padding(.horizontal)
-                
-                Text("Introduction to notes")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-//                    .padding(.horizontal)
+                    .padding(.horizontal)
+                    .padding(.top, 10)
 
                 ForEach(lessons.indices, id: \.self) { index in
                     let isCompleted = isLessonCompleted(lessonID: lessons[index].id)
