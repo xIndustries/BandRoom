@@ -76,15 +76,31 @@ struct QuizView: View {
                     } else {
                         let question = questions[currentQuestionIndex]
                         
-                        VStack(spacing: 10) {
+//                        VStack(spacing: 10) {
+//                            Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
+//                                .font(.headline)
+//                            
+//                            Text(question.questionText)
+//                                .font(.title3)
+//                                .fontWeight(.semibold)
+//                                .multilineTextAlignment(.center)
+//                        }
+                        
+                        VStack {
                             Text("Question \(currentQuestionIndex + 1) of \(questions.count)")
                                 .font(.headline)
-                            
+                                .padding(.bottom, 5)
+
                             Text(question.questionText)
                                 .font(.title3)
                                 .fontWeight(.semibold)
                                 .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.horizontal, 20)
                         }
+                        .padding()
+
                         
                         if let image = question.image {
                             Image(image)
@@ -180,25 +196,6 @@ struct QuizView: View {
             print("❤️ Restored \(heartsToRestore) hearts! Current: \(hearts)")
         }
     }
-
-    // ✅ Load questions from JSON
-//    func loadQuestions() {
-//        let fileName = "Lesson_\(lessonNumber)"
-//        
-//        guard let url = Bundle.main.url(forResource: fileName, withExtension: "json") else {
-//            print("❌ Lesson JSON file not found: \(fileName).json")
-//            return
-//        }
-//        
-//        do {
-//            let data = try Data(contentsOf: url)
-//            let lesson = try JSONDecoder().decode(LessonData.self, from: data)
-//            questions = lesson.questions
-//            print("✅ Successfully loaded \(fileName).json")
-//        } catch {
-//            print("❌ Error loading questions: \(error)")
-//        }
-//    }
     
     // ✅ Load and shuffle questions from JSON
     func loadQuestions() {
