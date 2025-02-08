@@ -14,6 +14,8 @@ struct QuizView: View {
     @State private var exitedEarly = false
     @State private var correctStreak: Int = 0
     @State private var showStreakPopup = false
+    @State private var totalCorrectAnswers = 0
+    @State private var showPerfectScorePopup = false
     @State private var selectedDetent: PresentationDetent = .fraction(0.3)
     @State private var showExitAlert = false // ✅ Exit confirmation alert
 
@@ -50,12 +52,6 @@ struct QuizView: View {
                             loadQuestions()
                         }
                 } else if quizCompleted {
-//                    QuizCompletedView(onExit: {
-//                        updateDailyStreak()
-//                        awardXP()
-//                        onComplete(lessonNumber)
-//                        dismiss()
-//                    })
                     // ❌ REMOVE `awardXP()` CALL FROM QUIZ COMPLETION
                     QuizCompletedView(onExit: {
                         updateDailyStreak()
@@ -172,6 +168,17 @@ struct QuizView: View {
                         }
                     }
             }
+            
+            if showPerfectScorePopup {
+                PerfectScoreCongratsView(onDismiss: {
+                    showPerfectScorePopup = false
+                    updateDailyStreak()
+                    onComplete(lessonNumber)
+                    dismiss()
+                })
+                .transition(.scale)
+            }
+
         }
         .alert(isPresented: $showExitAlert) {
             Alert(
@@ -245,7 +252,8 @@ struct QuizView: View {
         
         if isCorrect == true {
             correctStreak += 1
-            
+            totalCorrectAnswers += 1  // ✅ Track total correct answers
+
             if correctStreak == 5 {
                 showStreakPopup = true
                 correctStreak = 0
@@ -257,13 +265,19 @@ struct QuizView: View {
                 lastHeartUpdate = Date().timeIntervalSince1970
             }
         }
-        
+
         if currentQuestionIndex + 1 < questions.count {
             showResultModal = true
         } else {
             quizCompleted = true
+
+            // ✅ Check if user got all 10 questions correct
+            if totalCorrectAnswers == questions.count {
+                showPerfectScorePopup = true
+            }
         }
     }
+
 
     // ✅ Award XP when lesson is completed
     func awardXP() {
